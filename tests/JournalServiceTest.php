@@ -1,21 +1,22 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
 use App\JournalService;
+use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\TestCase;
 
-/**
- * @covers \App\JournalService;
- */
+#[CoversClass(JournalService::class)]
 class JournalServiceTest extends TestCase
 {
     public function testAddEntryStoresAndReturnsData()
     {
+        $this->assertTrue(class_exists(\App\JournalService::class));
+
         $service = new JournalService();
-        $entry = $service->addEntry("Session 1", "We fought a goblin!");
+        $entry = $service->addEntry('Session 1', 'We fought a goblin!');
 
         $this->assertArrayHasKey('id', $entry);
-        $this->assertSame("Session 1", $entry['title']);
-        $this->assertSame("We fought a goblin!", $entry['body']);
+        $this->assertSame('Session 1', $entry['title']);
+        $this->assertSame('We fought a goblin!', $entry['body']);
         $this->assertNotEmpty($entry['created_at']);
 
         $allEntries = $service->getEntries();
