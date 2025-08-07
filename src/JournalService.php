@@ -2,6 +2,9 @@
 
 namespace App;
 
+/**
+ * in-memory journal service
+ */
 class JournalService
 {
     private array $entries = [];
