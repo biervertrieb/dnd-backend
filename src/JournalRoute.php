@@ -15,16 +15,25 @@ $app->get('/journal', function (Request $request, Response $response) use ($svc)
 
 $app->post('/journal', function (Request $request, Response $response) use ($svc) {
     $input = $request->getParsedBody();
-    $title = $input['title'] ?? '';
-    $body = $input['body'] ?? '';
-
-    if (!$title || !$body) {
-        $response->getBody()->write(json_encode(['error' => 'Missing title or body']));
-        return $response->withStatus(400)->withHeader('Content-Type', 'application/json');
+    try {
+        $entry = $svc->addEntry($input['title'] ?? null, $input['body'] ?? null);
+        $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $entry]));
+        return $response->withHeader('Content-Type', 'application/json');
+    } catch (\RuntimeException $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
     }
+});
 
-    $entry = $svc->addEntry($title, $body);
-
-    $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $entry]));
-    return $response->withHeader('Content-Type', 'application/json');
+$app->put('/journal/{id}', function (Request $request, Response $response, array $args) use ($svc) {
+    $id = $args['id'];
+    $input = $request->getParsedBody();
+    try {
+        $updated = $svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null);
+        $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
+        return $response->withHeader('Content-Type', 'application/json');
+    } catch (\RuntimeException $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+    }
 });

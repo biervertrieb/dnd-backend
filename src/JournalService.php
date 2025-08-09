@@ -43,6 +43,10 @@ class JournalService
      */
     public function addEntry(string $title, string $body): array
     {
+        if ($title === null || $title === '')
+            throw new \RuntimeException('Title is empty');
+        if ($body === null || $body === '')
+            throw new \RuntimeException('Body is empty');
         $entries = $this->load();
         $entry = [
             'id' => uniqid(),
@@ -66,13 +70,15 @@ class JournalService
      */
     public function updateEntry(string $id, ?string $title, ?string $body)
     {
+        if ($title === null || $title === '')
+            throw new \RuntimeException('Title is empty');
+        if ($body === null || $body === '')
+            throw new \RuntimeException('Body is empty');
         $entries = $this->load();
         foreach ($entries as &$entry) {
             if ($entry['id'] === $id) {
-                if ($title !== null)
-                    $entry['title'] = $title;
-                if ($body !== null)
-                    $entry['body'] = $body;
+                $entry['title'] = $title;
+                $entry['body'] = $body;
                 $entry['updated_at'] = date('c');
                 return $entry;
             }
