@@ -60,4 +60,23 @@ class JournalService
     {
         return $this->load();
     }
+
+    /**
+     * @return array<string,mixed>
+     */
+    public function updateEntry(string $id, ?string $title, ?string $body)
+    {
+        $entries = $this->load();
+        foreach ($entries as &$entry) {
+            if ($entry['id'] === $id) {
+                if ($title !== null)
+                    $entry['title'] = $title;
+                if ($body !== null)
+                    $entry['body'] = $body;
+                $entry['updated_at'] = date('c');
+                return $entry;
+            }
+        }
+        throw new \RuntimeException('Entry not found');
+    }
 }
