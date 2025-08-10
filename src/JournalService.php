@@ -80,6 +80,7 @@ class JournalService
                 $entry['title'] = $title;
                 $entry['body'] = $body;
                 $entry['updated_at'] = date('c');
+                $this->save($entries);
                 return $entry;
             }
         }
