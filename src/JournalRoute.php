@@ -16,7 +16,7 @@ $app->get('/journal', function (Request $request, Response $response) use ($svc)
 $app->post('/journal', function (Request $request, Response $response) use ($svc) {
     $input = $request->getParsedBody();
     try {
-        $entry = $svc->addEntry($input['title'] ?? null, $input['body'] ?? null);
+        $entry = $svc->addEntry($input['title'] ?? null, $input['body'] ?? null, $input['day'] ?? null);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $entry]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
@@ -29,7 +29,7 @@ $app->put('/journal/{id}', function (Request $request, Response $response, array
     $id = $args['id'];
     $input = $request->getParsedBody();
     try {
-        $updated = $svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null);
+        $updated = $svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null, $input['day'] ?? null);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {

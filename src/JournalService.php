@@ -41,17 +41,20 @@ class JournalService
     /**
      * @return array<string,mixed>
      */
-    public function addEntry(string $title, string $body): array
+    public function addEntry(string $title, string $body, int $day): array
     {
         if ($title === null || $title === '')
             throw new \RuntimeException('Title is empty');
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
+        if ($day === null || $day === '')
+            throw new \RuntimeException('Day is empty');
         $entries = $this->load();
         $entry = [
             'id' => uniqid(),
             'title' => $title,
             'body' => $body,
+            'ingame_day' => $day,
             'created_at' => date('c'),
             'updated_at' => date('c'),
         ];
@@ -68,17 +71,20 @@ class JournalService
     /**
      * @return array<string,mixed>
      */
-    public function updateEntry(string $id, ?string $title, ?string $body)
+    public function updateEntry(string $id, ?string $title, ?string $body, ?int $day)
     {
         if ($title === null || $title === '')
             throw new \RuntimeException('Title is empty');
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
+        if ($day === null || $day === '')
+            throw new \RuntimeException('Day is empty');
         $entries = $this->load();
         foreach ($entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['title'] = $title;
                 $entry['body'] = $body;
+                $entry['ingame_day'] = $day;
                 $entry['updated_at'] = date('c');
                 $this->save($entries);
                 return $entry;
