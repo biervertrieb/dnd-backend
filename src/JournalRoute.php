@@ -37,3 +37,16 @@ $app->put('/journal/{id}', function (Request $request, Response $response, array
         return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
     }
 });
+
+$app->delete('/journal/{id}', function (Request $request, Response $response, array $args) use ($svc) {
+    $id = $args['id'];
+    $input = $request->getParsedBody();
+    try {
+        $updated = $svc->deleteEntry($id);
+        $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
+        return $response->withHeader('Content-Type', 'application/json');
+    } catch (\RuntimeException $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+    }
+});

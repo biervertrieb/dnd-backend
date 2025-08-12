@@ -54,7 +54,7 @@ class JournalService
             'id' => uniqid(),
             'title' => $title,
             'body' => $body,
-            'ingame_day' => $day,
+            'day' => $day,
             'created_at' => date('c'),
             'updated_at' => date('c'),
         ];
@@ -63,9 +63,16 @@ class JournalService
         return $entry;
     }
 
-    public function getEntries(): array
+    public function getEntries(bool $archive = false): array
     {
-        return $this->load();
+        $allEntries = $this->load();
+        $returnEntries = [];
+        foreach ($allEntries as $entry) {
+            $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
+            if ($archive === $isArchived)
+                $returnEntries[] = $entry;
+        }
+        return $returnEntries;
     }
 
     /**
@@ -84,7 +91,21 @@ class JournalService
             if ($entry['id'] === $id) {
                 $entry['title'] = $title;
                 $entry['body'] = $body;
-                $entry['ingame_day'] = $day;
+                $entry['day'] = $day;
+                $entry['updated_at'] = date('c');
+                $this->save($entries);
+                return $entry;
+            }
+        }
+        throw new \RuntimeException('Entry not found');
+    }
+
+    public function deleteEntry(string $id)
+    {
+        $entries = $this->load();
+        foreach ($entries as &$entry) {
+            if ($entry['id'] === $id) {
+                $entry['archived'] = 'true';
                 $entry['updated_at'] = date('c');
                 $this->save($entries);
                 return $entry;
