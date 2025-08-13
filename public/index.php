@@ -9,6 +9,7 @@ $app->addBodyParsingMiddleware();
 
 require __DIR__ . '/../src/cors.php';
 require __DIR__ . '/../src/JournalRoute.php';
+require __DIR__ . '/../src/CompendiumRoute.php';
 require __DIR__ . '/../src/FallbackRoute.php';
 require __DIR__ . '/../src/options.php';
 

@@ -16,7 +16,7 @@ $app->get('/compendium', function (Request $request, Response $response) use ($c
 $app->post('/compendium', function (Request $request, Response $response) use ($comp_svc) {
     $input = $request->getParsedBody();
     try {
-        $entry = $comp_svc->addEntry($input['title'] ?? null, $input['body'] ?? null, $input['day'] ?? null);
+        $entry = $comp_svc->addEntry($input['title'] ?? null, $input['body'] ?? null, $input['tags'] ?? null);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $entry]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
@@ -29,9 +29,22 @@ $app->put('/compendium/{id}', function (Request $request, Response $response, ar
     $id = $args['id'];
     $input = $request->getParsedBody();
     try {
-        $updated = $comp_svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null, $input['day'] ?? null);
+        $updated = $comp_svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null, $input['tags'] ?? null);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
         return $response->withHeader('Content-Type', 'application/json');
+    } catch (\RuntimeException $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+    }
+});
+
+$app->delete('/compendium/{id}', function (Request $request, Response $response, array $args) use ($comp_svc) {
+    $id = $args['id'];
+    $input = $request->getParsedBody();
+    try {
+        $updated = $comp_svc->deleteEntry($id);
+        $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(204);
     } catch (\RuntimeException $e) {
         $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(400);

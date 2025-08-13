@@ -3,14 +3,14 @@
 namespace App;
 
 /**
- * in-memory journal service
+ * file based compendium service
  */
-class JournalService
+class CompendiumService
 {
     private array $entries = [];
     private string $file;
 
-    public function __construct(string $file = __DIR__ . '/../data/journal.json')
+    public function __construct(string $file = __DIR__ . '/../data/compendium.json')
     {
         $this->file = $file;
         if (!is_dir(dirname($this->file))) {
@@ -41,20 +41,18 @@ class JournalService
     /**
      * @return array<string,mixed>
      */
-    public function addEntry(string $title, string $body, int $day): array
+    public function addEntry(string $title, string $body, string $tags): array
     {
         if ($title === null || $title === '')
             throw new \RuntimeException('Title is empty');
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
-        if ($day === null || $day === '')
-            throw new \RuntimeException('Day is empty');
         $entries = $this->load();
         $entry = [
             'id' => uniqid(),
             'title' => $title,
             'body' => $body,
-            'day' => $day,
+            'tags' => $tags,
             'created_at' => date('c'),
             'updated_at' => date('c'),
         ];
@@ -63,28 +61,47 @@ class JournalService
         return $entry;
     }
 
-    public function getEntries(): array
+    public function getEntries(bool $archive = false): array
     {
-        return $this->load();
+        $allEntries = $this->load();
+        $returnEntries = [];
+        foreach ($allEntries as $entry) {
+            $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
+            if ($archive === $isArchived)
+                $returnEntries[] = $entry;
+        }
+        return $returnEntries;
     }
 
     /**
      * @return array<string,mixed>
      */
-    public function updateEntry(string $id, ?string $title, ?string $body, ?int $day)
+    public function updateEntry(string $id, ?string $title, ?string $body, ?string $tags)
     {
         if ($title === null || $title === '')
             throw new \RuntimeException('Title is empty');
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
-        if ($day === null || $day === '')
-            throw new \RuntimeException('Day is empty');
         $entries = $this->load();
         foreach ($entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['title'] = $title;
+                $entry['tags'] = $tags;
                 $entry['body'] = $body;
-                $entry['day'] = $day;
+                $entry['updated_at'] = date('c');
+                $this->save($entries);
+                return $entry;
+            }
+        }
+        throw new \RuntimeException('Entry not found');
+    }
+
+    public function deleteEntry(string $id)
+    {
+        $entries = $this->load();
+        foreach ($entries as &$entry) {
+            if ($entry['id'] === $id) {
+                $entry['archived'] = 'true';
                 $entry['updated_at'] = date('c');
                 $this->save($entries);
                 return $entry;
