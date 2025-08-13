@@ -44,7 +44,7 @@ $app->delete('/journal/{id}', function (Request $request, Response $response, ar
     try {
         $updated = $svc->deleteEntry($id);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
-        return $response->withHeader('Content-Type', 'application/json');
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(204);
     } catch (\RuntimeException $e) {
         $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
