@@ -3,7 +3,7 @@
 namespace App;
 
 /**
- * in-memory journal service
+ * file based journal service
  */
 class JournalService
 {
