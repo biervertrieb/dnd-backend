@@ -13,6 +13,18 @@ $app->get('/compendium', function (Request $request, Response $response) use ($c
     return $response->withHeader('Content-Type', 'application/json');
 });
 
+$app->get('/compendium/{id}', function (Request $request, Response $response, array $args) use ($comp_svc) {
+    $id = $args['id'];
+    try {
+        $loaded = $comp_svc->getEntry($id);
+        $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $loaded]));
+        return $response->withHeader('Content-Type', 'application/json');
+    } catch (\RuntimeException $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+    }
+});
+
 $app->post('/compendium', function (Request $request, Response $response) use ($comp_svc) {
     $input = $request->getParsedBody();
     try {
