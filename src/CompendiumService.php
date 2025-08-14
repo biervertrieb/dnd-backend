@@ -7,7 +7,8 @@ namespace App;
  */
 class CompendiumService
 {
-    private array $entries = [];
+    private array $entries;
+    private bool $loaded;
     private string $file;
 
     public function __construct(string $file = __DIR__ . '/../data/compendium.json')
@@ -19,23 +20,27 @@ class CompendiumService
         if (!file_exists($this->file)) {
             file_put_contents($this->file, json_encode([]));
         }
+        $this->entries = [];
     }
 
     /**
      * @return array<int,array<string,mixed>>
      */
-    private function load(): array
+    private function load(): void
     {
-        $raw = file_get_contents($this->file);
-        return $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
+        if (!$this->loaded) {
+            $raw = file_get_contents($this->file);
+            $this->entries = $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
+            $this->loaded = true;
+        }
     }
 
     /**
      * @param array<int,array<string,mixed>> $entries
      */
-    private function save(array $entries): void
+    private function save(): void
     {
-        file_put_contents($this->file, json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        file_put_contents($this->file, json_encode($this->entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
     /**
@@ -47,7 +52,7 @@ class CompendiumService
             throw new \RuntimeException('Title is empty');
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
-        $entries = $this->load();
+        $this->load();
         $entry = [
             'id' => uniqid(),
             'title' => $title,
@@ -56,16 +61,16 @@ class CompendiumService
             'created_at' => date('c'),
             'updated_at' => date('c'),
         ];
-        array_unshift($entries, $entry);
-        $this->save($entries);
+        array_unshift($this->entries, $entry);
+        $this->save();
         return $entry;
     }
 
     public function getEntries(bool $archive = false): array
     {
-        $allEntries = $this->load();
+        $this->load();
         $returnEntries = [];
-        foreach ($allEntries as $entry) {
+        foreach ($this->entries as $entry) {
             $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
             if ($archive === $isArchived)
                 $returnEntries[] = $entry;
@@ -82,14 +87,14 @@ class CompendiumService
             throw new \RuntimeException('Title is empty');
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
-        $entries = $this->load();
-        foreach ($entries as &$entry) {
+        $this->load();
+        foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['title'] = $title;
                 $entry['tags'] = $tags;
                 $entry['body'] = $body;
                 $entry['updated_at'] = date('c');
-                $this->save($entries);
+                $this->save();
                 return $entry;
             }
         }
@@ -98,12 +103,12 @@ class CompendiumService
 
     public function deleteEntry(string $id)
     {
-        $entries = $this->load();
-        foreach ($entries as &$entry) {
+        $this->load();
+        foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['archived'] = 'true';
                 $entry['updated_at'] = date('c');
-                $this->save($entries);
+                $this->save();
                 return $entry;
             }
         }
