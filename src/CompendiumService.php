@@ -78,6 +78,16 @@ class CompendiumService
         return $returnEntries;
     }
 
+    public function getEntry(string $id)
+    {
+        $this->load();
+        foreach ($this->entries as $entry) {
+            if ($entry['id'] === $id)
+                return $entry;
+        }
+        throw new \RuntimeException('Entry not found');
+    }
+
     /**
      * @return array<string,mixed>
      */
