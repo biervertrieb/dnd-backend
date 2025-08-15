@@ -2,6 +2,8 @@
 
 namespace App;
 
+use App\Util\Slug;
+
 /**
  * file based compendium service
  */
@@ -21,6 +23,7 @@ class CompendiumService
             file_put_contents($this->file, json_encode([]));
         }
         $this->entries = [];
+        $this->loaded = false;
     }
 
     /**
@@ -32,6 +35,17 @@ class CompendiumService
             $raw = file_get_contents($this->file);
             $this->entries = $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
             $this->loaded = true;
+            // make sure every entry has slug
+            $tosave = false;
+            foreach ($this->entries as &$entry) {
+                if (!array_key_exists('slug', $entry)) {
+                    $base = Slug::make($entry['title']);
+                    $entry['slug'] = $this->uniqueSlug($base);
+                    $tosave = true;
+                }
+            }
+            if ($tosave)
+                $this->save();
         }
     }
 
@@ -41,6 +55,18 @@ class CompendiumService
     private function save(): void
     {
         file_put_contents($this->file, json_encode($this->entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+
+    private function uniqueSlug(string $base): string
+    {
+        $slug = $base;
+        $n = 2;
+        $existing = array_column($this->entries, 'slug');
+        while (in_array($slug, $existing, true)) {
+            $slug = $base . '-' . $n;
+            $n++;
+        }
+        return $slug;
     }
 
     /**
@@ -53,8 +79,11 @@ class CompendiumService
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
         $this->load();
+        $base = Slug::make($title);
+        $slug = $this->uniqueSlug($base);
         $entry = [
             'id' => uniqid(),
+            'slug' => $slug,
             'title' => $title,
             'body' => $body,
             'tags' => $tags,
@@ -78,7 +107,7 @@ class CompendiumService
         return $returnEntries;
     }
 
-    public function getEntry(string $id)
+    public function getByID(string $id)
     {
         $this->load();
         foreach ($this->entries as $entry) {
@@ -86,6 +115,15 @@ class CompendiumService
                 return $entry;
         }
         throw new \RuntimeException('Entry not found');
+    }
+
+    public function getBySlug(string $slug): ?array
+    {
+        foreach ($this->entries as $e) {
+            if (($e['slug'] ?? null) === $slug)
+                return $e;
+        }
+        return null;
     }
 
     /**

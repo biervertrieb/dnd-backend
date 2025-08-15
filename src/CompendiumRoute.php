@@ -13,10 +13,10 @@ $app->get('/compendium', function (Request $request, Response $response) use ($c
     return $response->withHeader('Content-Type', 'application/json');
 });
 
-$app->get('/compendium/{id}', function (Request $request, Response $response, array $args) use ($comp_svc) {
-    $id = $args['id'];
+$app->get('/compendium/{key}', function (Request $request, Response $response, array $args) use ($comp_svc) {
+    $key = $args['key'];
     try {
-        $loaded = $comp_svc->getEntry($id);
+        $loaded = $comp_svc->getBySlug($key) ?? $comp_svc->getByID($key);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $loaded]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
