@@ -27,7 +27,7 @@
     {
       "name": "Tests",
       "system_prompt": "Focus on the test suite and testing logic.",
-      "data": ["journal_service_test_file"]
+      "data": ["journal_service_test_file", "compendium_service_test_file"]
     },
     {
       "name": "Configuration & Setup",
@@ -143,6 +143,11 @@
       "type": "file",
       "path": "./codecompanion-workspace.json",
       "description": "CodeCompanion workspace configuration file."
+    },
+    "compendium_service_test_file": {
+      "type": "file",
+      "path": "./tests/CompendiumServiceTest.php",
+      "description": "Test suite for compendium service logic."
     }
   }
 }
