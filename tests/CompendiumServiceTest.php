@@ -1,7 +1,7 @@
 <?php
 
-use App\CompendiumService;
 use App\Util\Slug;
+use App\CompendiumService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -26,12 +26,12 @@ class CompendiumServiceTest extends TestCase
     public function testAddEntryStoresAndReturnsData()
     {
         $svc = new CompendiumService($this->tmpFile);
-        $entry = $svc->addEntry('Sword', 'A sharp blade.', 'weapon');
+        $entry = $svc->addEntry('Sword', 'A sharp blade.', ['weapon']);
         $this->assertArrayHasKey('id', $entry);
         $this->assertArrayHasKey('slug', $entry);
         $this->assertSame('Sword', $entry['title']);
         $this->assertSame('A sharp blade.', $entry['body']);
-        $this->assertSame('weapon', $entry['tags']);
+        $this->assertSame(['weapon'], $entry['tags']);
         $this->assertNotEmpty($entry['created_at']);
         $this->assertNotEmpty($entry['updated_at']);
     }
@@ -40,21 +40,21 @@ class CompendiumServiceTest extends TestCase
     {
         $svc = new CompendiumService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
-        $svc->addEntry('', 'Body', 'tag');
+        $svc->addEntry('', 'Body', []);
     }
 
     public function testAddEntryThrowsOnEmptyBody()
     {
         $svc = new CompendiumService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
-        $svc->addEntry('Title', '', 'tag');
+        $svc->addEntry('Title', '', []);
     }
 
     public function testSlugIsUnique()
     {
         $svc = new CompendiumService($this->tmpFile);
-        $entry1 = $svc->addEntry('Sword', 'First sword.', 'weapon');
-        $entry2 = $svc->addEntry('Sword', 'Second sword.', 'weapon');
+        $entry1 = $svc->addEntry('Sword', 'First sword.', ['weapon']);
+        $entry2 = $svc->addEntry('Sword', 'Second sword.', ['weapon']);
         $this->assertNotEquals($entry1['slug'], $entry2['slug']);
         $this->assertStringStartsWith('sword', $entry2['slug']);
     }
@@ -62,12 +62,12 @@ class CompendiumServiceTest extends TestCase
     public function testUpdateEntryModifiesEntry()
     {
         $svc = new CompendiumService($this->tmpFile);
-        $entry = $svc->addEntry('Sword', 'A sharp blade.', 'weapon');
+        $entry = $svc->addEntry('Sword', 'A sharp blade.', ['weapon']);
         sleep(1);
-        $updated = $svc->updateEntry($entry['id'], 'Axe', 'A heavy axe.', 'tool');
+        $updated = $svc->updateEntry($entry['id'], 'Axe', 'A heavy axe.', ['tool']);
         $this->assertSame('Axe', $updated['title']);
         $this->assertSame('A heavy axe.', $updated['body']);
-        $this->assertSame('tool', $updated['tags']);
+        $this->assertSame(['tool'], $updated['tags']);
         $this->assertNotEquals($entry['updated_at'], $updated['updated_at']);
     }
 
@@ -75,13 +75,13 @@ class CompendiumServiceTest extends TestCase
     {
         $svc = new CompendiumService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
-        $svc->updateEntry('nonexistent', 'Title', 'Body', 'tag');
+        $svc->updateEntry('nonexistent', 'Title', 'Body', []);
     }
 
     public function testDeleteEntryArchivesEntry()
     {
         $svc = new CompendiumService($this->tmpFile);
-        $entry = $svc->addEntry('Sword', 'A sharp blade.', 'weapon');
+        $entry = $svc->addEntry('Sword', 'A sharp blade.', ['weapon']);
         sleep(1);
         $deleted = $svc->deleteEntry($entry['id']);
         $this->assertSame('true', $deleted['archived']);
@@ -98,8 +98,8 @@ class CompendiumServiceTest extends TestCase
     public function testGetEntriesReturnsOnlyUnarchivedByDefault()
     {
         $svc = new CompendiumService($this->tmpFile);
-        $entry1 = $svc->addEntry('Sword', 'A sharp blade.', 'weapon');
-        $entry2 = $svc->addEntry('Axe', 'A heavy axe.', 'tool');
+        $entry1 = $svc->addEntry('Sword', 'A sharp blade.', ['weapon']);
+        $entry2 = $svc->addEntry('Axe', 'A heavy axe.', ['tool']);
         $svc->deleteEntry($entry1['id']);
         $entries = $svc->getEntries();
         $this->assertCount(1, $entries);
@@ -109,7 +109,7 @@ class CompendiumServiceTest extends TestCase
     public function testGetEntriesReturnsArchivedWhenRequested()
     {
         $svc = new CompendiumService($this->tmpFile);
-        $entry1 = $svc->addEntry('Sword', 'A sharp blade.', 'weapon');
+        $entry1 = $svc->addEntry('Sword', 'A sharp blade.', ['weapon']);
         $svc->deleteEntry($entry1['id']);
         $archived = $svc->getEntries(true);
         $this->assertCount(1, $archived);
@@ -119,7 +119,7 @@ class CompendiumServiceTest extends TestCase
     public function testGetByIDReturnsEntry()
     {
         $svc = new CompendiumService($this->tmpFile);
-        $entry = $svc->addEntry('Sword', 'A sharp blade.', 'weapon');
+        $entry = $svc->addEntry('Sword', 'A sharp blade.', ['weapon']);
         $found = $svc->getByID($entry['id']);
         $this->assertSame($entry['id'], $found['id']);
     }
@@ -134,7 +134,7 @@ class CompendiumServiceTest extends TestCase
     public function testGetBySlugReturnsEntry()
     {
         $svc = new CompendiumService($this->tmpFile);
-        $entry = $svc->addEntry('Sword', 'A sharp blade.', 'weapon');
+        $entry = $svc->addEntry('Sword', 'A sharp blade.', ['weapon']);
         $found = $svc->getBySlug($entry['slug']);
         $this->assertSame($entry['id'], $found['id']);
     }

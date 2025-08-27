@@ -28,7 +28,7 @@ $app->get('/compendium/{key}', function (Request $request, Response $response, a
 $app->post('/compendium', function (Request $request, Response $response) use ($comp_svc) {
     $input = $request->getParsedBody();
     try {
-        $entry = $comp_svc->addEntry($input['title'] ?? null, $input['body'] ?? null, $input['tags'] ?? null);
+        $entry = $comp_svc->addEntry($input['title'] ?? null, $input['body'] ?? null, $input['tags'] ?? []);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $entry]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
@@ -41,7 +41,7 @@ $app->put('/compendium/{id}', function (Request $request, Response $response, ar
     $id = $args['id'];
     $input = $request->getParsedBody();
     try {
-        $updated = $comp_svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null, $input['tags'] ?? null);
+        $updated = $comp_svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null, $input['tags'] ?? []);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {

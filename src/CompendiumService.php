@@ -72,12 +72,18 @@ class CompendiumService
     /**
      * @return array<string,mixed>
      */
-    public function addEntry(string $title, string $body, string $tags): array
+    public function addEntry(string $title, string $body, array $tags): array
     {
         if ($title === null || $title === '')
             throw new \RuntimeException('Title is empty');
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
+        if (!is_array($tags))
+            throw new \RuntimeException('Tags must be an array');
+        // Filter tags to only non-empty strings
+        $tags = array_values(array_filter($tags, function ($tag) {
+            return is_string($tag) && trim($tag) !== '';
+        }));
         $this->load();
         $base = Slug::make($title);
         $slug = $this->uniqueSlug($base);
@@ -129,12 +135,18 @@ class CompendiumService
     /**
      * @return array<string,mixed>
      */
-    public function updateEntry(string $id, ?string $title, ?string $body, ?string $tags)
+    public function updateEntry(string $id, ?string $title, ?string $body, ?array $tags)
     {
         if ($title === null || $title === '')
             throw new \RuntimeException('Title is empty');
         if ($body === null || $body === '')
             throw new \RuntimeException('Body is empty');
+        if (!is_array($tags))
+            throw new \RuntimeException('Tags must be an array');
+        // Filter tags to only non-empty strings
+        $tags = array_values(array_filter($tags, function ($tag) {
+            return is_string($tag) && trim($tag) !== '';
+        }));
         $this->load();
         foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
