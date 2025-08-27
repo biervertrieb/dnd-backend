@@ -39,7 +39,8 @@
         "readme_md_file",
         "license_file",
         "gitignore_file",
-        "public_index_file"
+        "public_index_file",
+        "codecompanion_workspace_file"
       ]
     },
     {
@@ -137,6 +138,11 @@
       "type": "file",
       "path": "./public/index.php",
       "description": "Main entry point for the Slim application."
+    },
+    "codecompanion_workspace_file": {
+      "type": "file",
+      "path": "./codecompanion-workspace.json",
+      "description": "CodeCompanion workspace configuration file."
     }
   }
 }
