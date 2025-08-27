@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "dnd-journal-backend-workspace",
+  "version": "0.1.0",
+  "system_prompt": "You are a helpful assistant for a PHP backend project using the Slim framework. Provide accurate, concise, and context-aware answers about the codebase.",
+  "groups": [
+    {
+      "name": "Journal Features",
+      "system_prompt": "Focus on the journal-related API features.",
+      "data": ["journal_route_file", "journal_service_file"]
+    },
+    {
+      "name": "Compendium Features",
+      "system_prompt": "Focus on the compendium-related API features.",
+      "data": ["compendium_route_file", "compendium_service_file"]
+    },
+    {
+      "name": "Utilities",
+      "system_prompt": "Focus on utility and helper code.",
+      "data": [
+        "slug_util_file",
+        "cors_util_file",
+        "options_util_file",
+        "fallback_route_file"
+      ]
+    },
+    {
+      "name": "Tests",
+      "system_prompt": "Focus on the test suite and testing logic.",
+      "data": ["journal_service_test_file"]
+    },
+    {
+      "name": "Configuration & Setup",
+      "system_prompt": "Focus on project configuration, setup, and entry point.",
+      "data": [
+        "composer_json_file",
+        "composer_lock_file",
+        "phpunit_xml_file",
+        "readme_md_file",
+        "license_file",
+        "gitignore_file",
+        "public_index_file"
+      ]
+    },
+    {
+      "name": "All Features & Utilities",
+      "system_prompt": "Focus on all API features and utilities.",
+      "data": [
+        "journal_route_file",
+        "journal_service_file",
+        "compendium_route_file",
+        "compendium_service_file",
+        "slug_util_file",
+        "cors_util_file",
+        "options_util_file",
+        "fallback_route_file"
+      ]
+    }
+  ],
+  "data": {
+    "journal_route_file": {
+      "type": "file",
+      "path": "./src/JournalRoute.php",
+      "description": "Defines journal-related API routes."
+    },
+    "journal_service_file": {
+      "type": "file",
+      "path": "./src/JournalService.php",
+      "description": "Implements business logic for journal features."
+    },
+    "compendium_route_file": {
+      "type": "file",
+      "path": "./src/CompendiumRoute.php",
+      "description": "Defines compendium-related API routes."
+    },
+    "compendium_service_file": {
+      "type": "file",
+      "path": "./src/CompendiumService.php",
+      "description": "Implements business logic for compendium features."
+    },
+    "slug_util_file": {
+      "type": "file",
+      "path": "./src/Util/Slug.php",
+      "description": "Utility for slug generation and manipulation."
+    },
+    "cors_util_file": {
+      "type": "file",
+      "path": "./src/cors.php",
+      "description": "Handles CORS setup for API requests."
+    },
+    "options_util_file": {
+      "type": "file",
+      "path": "./src/options.php",
+      "description": "Handles HTTP OPTIONS requests for API."
+    },
+    "fallback_route_file": {
+      "type": "file",
+      "path": "./src/FallbackRoute.php",
+      "description": "Handles fallback routing for undefined endpoints."
+    },
+    "journal_service_test_file": {
+      "type": "file",
+      "path": "./tests/JournalServiceTest.php",
+      "description": "Test suite for journal service logic."
+    },
+    "composer_json_file": {
+      "type": "file",
+      "path": "./composer.json",
+      "description": "Project dependencies and metadata."
+    },
+    "composer_lock_file": {
+      "type": "file",
+      "path": "./composer.lock",
+      "description": "Locked dependency versions."
+    },
+    "phpunit_xml_file": {
+      "type": "file",
+      "path": "./phpunit.xml",
+      "description": "PHPUnit configuration file."
+    },
+    "readme_md_file": {
+      "type": "file",
+      "path": "./README.md",
+      "description": "Project overview and documentation."
+    },
+    "license_file": {
+      "type": "file",
+      "path": "./LICENSE",
+      "description": "Project license information."
+    },
+    "gitignore_file": {
+      "type": "file",
+      "path": "./.gitignore",
+      "description": "Git ignore rules for the repository."
+    },
+    "public_index_file": {
+      "type": "file",
+      "path": "./public/index.php",
+      "description": "Main entry point for the Slim application."
+    }
+  }
+}
