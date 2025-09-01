@@ -2,6 +2,10 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use Dotenv\Dotenv;
+
+Dotenv::createImmutable(__DIR__ . '/../')->load();
+
 use Slim\Factory\AppFactory;
 
 $app = AppFactory::create();
