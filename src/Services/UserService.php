@@ -32,6 +32,38 @@ class UserService
 
     public function register(string $username, string $password): array
     {
+        // Type checks
+        if (!is_string($username) || !is_string($password)) {
+            throw new \TypeError('Username and password must be strings');
+        }
+        $username = trim($username);
+        // Validation
+        if ($username === '' || $password === '') {
+            throw new \RuntimeException('Username and password cannot be empty');
+        }
+        if (strlen($username) < 3) {
+            throw new \RuntimeException('Username too short');
+        }
+        if (strlen($username) > 50) {
+            throw new \RuntimeException('Username too long');
+        }
+        // Minimum password length check is handled below (min 2)
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $username)) {
+            throw new \RuntimeException('Username contains invalid characters');
+        }
+        if (preg_match('/[\n\r]/', $password)) {
+            throw new \RuntimeException('Password contains invalid characters');
+        }
+        $password = trim($password);
+        if ($password === '') {
+            throw new \RuntimeException('Username and password cannot be empty');
+        }
+        if (strlen($password) < 6) {
+            throw new \RuntimeException('Password too short');
+        }
+        if (strlen($password) > 128) {
+            throw new \RuntimeException('Password too long');
+        }
         foreach ($this->users as $user) {
             if ($user['username'] === $username) {
                 throw new \RuntimeException('Username already exists');
