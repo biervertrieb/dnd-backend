@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Services;
 
 use App\Util\Slug;
 
@@ -13,7 +13,7 @@ class CompendiumService
     private bool $loaded;
     private string $file;
 
-    public function __construct(string $file = __DIR__ . '/../data/compendium.json')
+    public function __construct(string $file = __DIR__ . '/../../data/compendium.json')
     {
         $this->file = $file;
         if (!is_dir(dirname($this->file))) {

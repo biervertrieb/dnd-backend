@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Services;
 
 /**
  * file based journal service
@@ -10,7 +10,7 @@ class JournalService
     private array $entries = [];
     private string $file;
 
-    public function __construct(string $file = __DIR__ . '/../data/journal.json')
+    public function __construct(string $file = __DIR__ . '/../../data/journal.json')
     {
         $this->file = $file;
         if (!is_dir(dirname($this->file))) {

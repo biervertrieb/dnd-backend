@@ -1,22 +1,34 @@
 <?php
 
-use App\JournalService;
+use App\Services\CompendiumService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
-$svc = new JournalService();
+$comp_svc = new CompendiumService();
 
-$app->get('/journal', function (Request $request, Response $response) use ($svc) {
-    $data = $svc->getEntries();
+$app->get('/compendium', function (Request $request, Response $response) use ($comp_svc) {
+    $data = $comp_svc->getEntries();
     $response->getBody()->write(json_encode($data));
     return $response->withHeader('Content-Type', 'application/json');
 });
 
-$app->post('/journal', function (Request $request, Response $response) use ($svc) {
+$app->get('/compendium/{key}', function (Request $request, Response $response, array $args) use ($comp_svc) {
+    $key = $args['key'];
+    try {
+        $loaded = $comp_svc->getBySlug($key) ?? $comp_svc->getByID($key);
+        $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $loaded]));
+        return $response->withHeader('Content-Type', 'application/json');
+    } catch (\RuntimeException $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+    }
+});
+
+$app->post('/compendium', function (Request $request, Response $response) use ($comp_svc) {
     $input = $request->getParsedBody();
     try {
-        $entry = $svc->addEntry($input['title'] ?? null, $input['body'] ?? null, $input['day'] ?? null);
+        $entry = $comp_svc->addEntry($input['title'] ?? null, $input['body'] ?? null, $input['tags'] ?? []);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $entry]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
@@ -25,11 +37,11 @@ $app->post('/journal', function (Request $request, Response $response) use ($svc
     }
 });
 
-$app->put('/journal/{id}', function (Request $request, Response $response, array $args) use ($svc) {
+$app->put('/compendium/{id}', function (Request $request, Response $response, array $args) use ($comp_svc) {
     $id = $args['id'];
     $input = $request->getParsedBody();
     try {
-        $updated = $svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null, $input['day'] ?? null);
+        $updated = $comp_svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null, $input['tags'] ?? []);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
@@ -38,11 +50,11 @@ $app->put('/journal/{id}', function (Request $request, Response $response, array
     }
 });
 
-$app->delete('/journal/{id}', function (Request $request, Response $response, array $args) use ($svc) {
+$app->delete('/compendium/{id}', function (Request $request, Response $response, array $args) use ($comp_svc) {
     $id = $args['id'];
     $input = $request->getParsedBody();
     try {
-        $updated = $svc->deleteEntry($id);
+        $updated = $comp_svc->deleteEntry($id);
         $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(204);
     } catch (\RuntimeException $e) {
