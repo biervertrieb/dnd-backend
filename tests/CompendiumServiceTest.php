@@ -1,7 +1,7 @@
 <?php
 
+use App\Services\CompendiumService;
 use App\Util\Slug;
-use App\CompendiumService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

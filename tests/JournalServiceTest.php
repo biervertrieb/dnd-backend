@@ -1,6 +1,6 @@
 <?php
 
-use App\JournalService;
+use App\Services\JournalService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -24,7 +24,7 @@ class JournalServiceTest extends TestCase
 
     public function testAddEntryStoresAndReturnsData()
     {
-        $this->assertTrue(class_exists(\App\JournalService::class));
+        $this->assertTrue(class_exists(\App\Services\JournalService::class));
         $service = new JournalService($this->tmpFile);
         $entry = $service->addEntry('Session 1', 'We fought a goblin!', 1);
         $this->assertArrayHasKey('id', $entry);
