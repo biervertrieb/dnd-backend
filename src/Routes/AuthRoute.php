@@ -9,6 +9,13 @@ use Slim\App;
 
 $userSvc = new UserService();
 
+/**
+ * register authentication route
+ * provides a way to register a new account from username and password
+ * POST /register
+ * body: {username: string, password: string}
+ * response: {status: 'ok', user: {id: int, username: string}} or {status: 'error', message: string}
+ */
 $app->post('/register', function (Request $request, Response $response) use ($userSvc) {
     $input = $request->getParsedBody();
     try {
@@ -21,20 +28,20 @@ $app->post('/register', function (Request $request, Response $response) use ($us
     }
 });
 
+/**
+ * login authentication route
+ * provides a way to login with username and password
+ * POST /login
+ * body: {username: string, password: string}
+ * response: {status: 'ok', accessToken: string, refreshToken: string, user: {id: int, username: string}} or {status: 'error', message: string}
+ */
 $app->post('/login', function (Request $request, Response $response) use ($userSvc) {
     $input = $request->getParsedBody();
     try {
         $user = $userSvc->login($input['username'] ?? '', $input['password'] ?? '');
         $accessToken = JWT::encode(['id' => $user['id'], 'username' => $user['username']]);
         $refreshToken = JWT::encode(['id' => $user['id'], 'username' => $user['username'], 'exp' => time() + 604800]);  // 1 week
-        $response->getBody()->write(json_encode(
-            [
-                'status' => 'ok',
-                'accesToken' => $accessToken,
-                'refreshToken' => $refreshToken,
-                'user' => ['id' => $user['id'], 'username' => $user['username']]
-            ]
-        ));
+        $response->getBody()->write(json_encode(['status' => 'ok', 'accessToken' => $accessToken]));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
         $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
@@ -42,6 +49,13 @@ $app->post('/login', function (Request $request, Response $response) use ($userS
     }
 });
 
+/**
+ * refresh authentication route
+ * provides a way to refresh access token with refresh token
+ * POST /refresh
+ * body: {refreshToken: string}
+ * response: {status: 'ok', accessToken: string, refreshToken: string, user: {id: int, username: string}} or {status: 'error', message: string}
+ */
 $app->post('/refresh', function (Request $request, Response $response) {
     $refreshToken = $request->getAttribute('refreshToken');
     if (!$refreshToken) {
@@ -59,6 +73,13 @@ $app->post('/refresh', function (Request $request, Response $response) {
     }
 });
 
+/**
+ * logout authentication route
+ * provides a way to logout and invalidate tokens
+ * POST /logout
+ * header: {Authorization Bearer <accessToken>}
+ * response: {status: 'ok'|'error', message: string}
+ */
 // TODO: Implement token blacklisting for logout if needed
 $app->post('/logout', function (Request $request, Response $response) {
     // For stateless JWT, logout is handled client-side by discarding tokens
@@ -66,6 +87,13 @@ $app->post('/logout', function (Request $request, Response $response) {
     return $response->withHeader('Content-Type', 'application/json');
 })->add(new JWTAuthMiddleware());
 
+/**
+ * get current user route
+ * provides a way to get current logged in user info
+ * GET /me
+ * header: {Authorization Bearer <accessToken>}
+ * response: {status: 'ok', user: {id: int, username: string}} or {status: 'error', message: string}
+ */
 $app->get('/me', function (Request $request, Response $response) {
     $authHeader = $request->getHeaderLine('Authorization');
     if (!$authHeader || !preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
