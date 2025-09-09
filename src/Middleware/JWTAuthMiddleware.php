@@ -18,7 +18,7 @@ class JWTAuthMiddleware
         $token = $matches[1];
         try {
             if (JWT::isTokenInvalidated($token)) {
-                return $this->unauthorized();
+                return $this->invalid();
             }
             $user = JWT::decode($token);
             // Check for required claims
@@ -27,7 +27,7 @@ class JWTAuthMiddleware
             }
             // Check for expiration
             if (!isset($user['exp']) || $user['exp'] < time()) {
-                return $this->unauthorized();
+                return $this->expired();
             }
             $request = $request->withAttribute('user', $user);
             return $handler->handle($request);
@@ -40,6 +40,20 @@ class JWTAuthMiddleware
     {
         $response = new SlimResponse();
         $response->getBody()->write(json_encode(['error' => 'Unauthorized']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+    }
+
+    private function expired(): Response
+    {
+        $response = new SlimResponse();
+        $response->getBody()->write(json_encode(['error' => 'Access token expired']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+    }
+
+    private function invalid(): Response
+    {
+        $response = new SlimResponse();
+        $response->getBody()->write(json_encode(['error' => 'Invalid access token']));
         return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
     }
 }
