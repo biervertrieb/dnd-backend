@@ -70,6 +70,10 @@ $app->post('/refresh', function (Request $request, Response $response) {
         return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
     }
     try {
+        if (JWT::isTokenInvalidated($refreshToken)) {
+            $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Refresh token has been invalidated']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+        }
         $user = JWT::decode($refreshToken);
         if ($user['exp'] ?? 0 < time()) {
             $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Token expired']));
