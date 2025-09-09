@@ -47,4 +47,30 @@ final class JWT
             throw new \RuntimeException('Invalid token: ' . $e->getMessage());
         }
     }
+
+    public static function invalidateToken(string $token): void
+    {
+        $tokenFile = __DIR__ . '/../../data/invalid_tokens.json';
+        if (!is_dir(dirname($tokenFile))) {
+            mkdir(dirname($tokenFile), 0775, true);
+        }
+        if (!file_exists($tokenFile)) {
+            file_put_contents($tokenFile, json_encode([]));
+        }
+        $raw = file_get_contents($tokenFile);
+        $invalidTokens = $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
+        $invalidTokens[] = $token;
+        file_put_contents($tokenFile, json_encode($invalidTokens, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+
+    public static function isTokenInvalidated(string $token): bool
+    {
+        $tokenFile = __DIR__ . '/../../data/invalid_tokens.json';
+        if (!file_exists($tokenFile)) {
+            return false;
+        }
+        $raw = file_get_contents($tokenFile);
+        $invalidTokens = $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
+        return in_array($token, $invalidTokens, true);
+    }
 }
