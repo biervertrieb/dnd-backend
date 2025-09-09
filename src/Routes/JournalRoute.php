@@ -46,7 +46,7 @@ $app->group('/journal', function ($group) use ($svc) {
         try {
             $updated = $svc->deleteEntry($id);
             $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
-            return $response->withHeader('Content-Type', 'application/json')->withStatus(204);
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(200);
         } catch (\RuntimeException $e) {
             $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
             return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
