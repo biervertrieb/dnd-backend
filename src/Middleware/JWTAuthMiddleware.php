@@ -17,6 +17,9 @@ class JWTAuthMiddleware
         }
         $token = $matches[1];
         try {
+            if (JWT::isTokenInvalidated($token)) {
+                return $this->unauthorized();
+            }
             $user = JWT::decode($token);
             // Check for required claims
             if (!isset($user['id'], $user['username'])) {
