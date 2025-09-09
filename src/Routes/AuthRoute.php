@@ -96,11 +96,40 @@ $app->post('/refresh', function (Request $request, Response $response) {
  * provides a way to logout and invalidate tokens
  * POST /logout
  * header: {Authorization Bearer <accessToken>}
+ * body: {refreshToken: string}
  * response: {status: 'ok'|'error', message: string}
  */
-// TODO: Implement token blacklisting for logout if needed
 $app->post('/logout', function (Request $request, Response $response) {
-    // For stateless JWT, logout is handled client-side by discarding tokens
+    $authHeader = $request->getHeaderLine('Authorization');
+    if (!$authHeader || !preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'No access token provided']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+    }
+    $accessToken = $matches[1];
+    try {
+        JWT::decode($accessToken);
+    } catch (\RuntimeException $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Invalid access token: ' . $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+    }
+    $refreshToken = $request->getAttribute('refreshToken');
+    if (!$refreshToken) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'No refresh token provided']));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+    }
+    try {
+        JWT::decode($refreshToken);
+    } catch (\RuntimeException $e) {
+        $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Invalid refresh token: ' . $e->getMessage()]));
+        return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+    }
+    try {
+        JWT::invalidateToken($accessToken);
+        JWT::invalidateToken($refreshToken);
+    } catch (Exception $e) {
+        // Log the error but continue
+        // TODO: do something  with the error
+    }
     $response->getBody()->write(json_encode(['status' => 'ok', 'message' => 'Logged out']));
     return $response->withHeader('Content-Type', 'application/json');
 })->add(new JWTAuthMiddleware());
