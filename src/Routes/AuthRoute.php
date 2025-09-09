@@ -41,7 +41,14 @@ $app->post('/login', function (Request $request, Response $response) use ($userS
         $user = $userSvc->login($input['username'] ?? '', $input['password'] ?? '');
         $accessToken = JWT::encode(['id' => $user['id'], 'username' => $user['username']]);
         $refreshToken = JWT::encode(['id' => $user['id'], 'username' => $user['username'], 'exp' => time() + 604800]);  // 1 week
-        $response->getBody()->write(json_encode(['status' => 'ok', 'accessToken' => $accessToken]));
+        $response->getBody()->write(json_encode(
+            [
+                'status' => 'ok',
+                'accesToken' => $accessToken,
+                'refreshToken' => $refreshToken,
+                'user' => ['id' => $user['id'], 'username' => $user['username']]
+            ]
+        ));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
         $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
@@ -64,8 +71,19 @@ $app->post('/refresh', function (Request $request, Response $response) {
     }
     try {
         $user = JWT::decode($refreshToken);
+        if ($user['exp'] ?? 0 < time()) {
+            $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Token expired']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+        }
         $accessToken = JWT::encode(['id' => $user['id'], 'username' => $user['username']]);
-        $response->getBody()->write(json_encode(['status' => 'ok', 'accessToken' => $accessToken]));
+        $response->getBody()->write(json_encode(
+            [
+                'status' => 'ok',
+                'accesToken' => $accessToken,
+                'refreshToken' => $refreshToken,
+                'user' => ['id' => $user['id'], 'username' => $user['username']]
+            ]
+        ));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
         $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
@@ -103,7 +121,16 @@ $app->get('/me', function (Request $request, Response $response) {
     $token = $matches[1];
     try {
         $user = JWT::decode($token);
-        $response->getBody()->write(json_encode(['status' => 'ok', 'user' => ['id' => $user['id'], 'username' => $user['username']]]));
+        if ($user['exp'] ?? 0 < time()) {
+            $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Token expired']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+        }
+        $response->getBody()->write(json_encode(
+            [
+                'status' => 'ok',
+                'user' => ['id' => $user['id'], 'username' => $user['username']]
+            ]
+        ));
         return $response->withHeader('Content-Type', 'application/json');
     } catch (\RuntimeException $e) {
         $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
