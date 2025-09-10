@@ -2,7 +2,9 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use App\Services\CompendiumService;
 use App\Services\JournalService;
+use App\Services\UserService;
 use Dotenv\Dotenv;
 
 Dotenv::createImmutable(__DIR__ . '/../')->load();
@@ -22,5 +24,7 @@ foreach ($routeFiles as $file) {
 }
 
 registerJournalRoutes($app, JournalService::getInstance());
+registerCompendiumRoutes($app, CompendiumService::getInstance());
+registerAuthRoutes($app, UserService::getInstance());
 
 $app->run();
