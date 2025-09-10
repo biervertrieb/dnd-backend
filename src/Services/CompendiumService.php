@@ -102,8 +102,9 @@ class CompendiumService extends \App\Util\Singleton
         $returnEntries = [];
         foreach ($this->entries as $entry) {
             $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
-            if ($archive === $isArchived)
+            if ($archive === $isArchived) {
                 $returnEntries[] = $entry;
+            }
         }
         return $returnEntries;
     }
@@ -111,7 +112,8 @@ class CompendiumService extends \App\Util\Singleton
     public function getByID(string $id)
     {
         foreach ($this->entries as $entry) {
-            if ($entry['id'] === $id)
+            $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
+            if ($entry['id'] === $id && !$isArchived)
                 return $entry;
         }
         throw new \RuntimeException('Entry not found');
@@ -120,7 +122,8 @@ class CompendiumService extends \App\Util\Singleton
     public function getBySlug(string $slug): ?array
     {
         foreach ($this->entries as $e) {
-            if (($e['slug'] ?? null) === $slug)
+            $isArchived = array_key_exists('archived', $e) && $e['archived'] == 'true';
+            if (($e['slug'] ?? null) === $slug && !$isArchived)
                 return $e;
         }
         return null;
@@ -163,7 +166,11 @@ class CompendiumService extends \App\Util\Singleton
             }
         }
         foreach ($this->entries as &$entry) {
+            $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
             if ($entry['id'] === $id) {
+                if ($isArchived) {
+                    throw new \RuntimeException('Cannot update archived entry');
+                }
                 $entry['title'] = $title;
                 $entry['tags'] = $tags;
                 $entry['body'] = $body;
@@ -178,7 +185,11 @@ class CompendiumService extends \App\Util\Singleton
     public function deleteEntry(string $id)
     {
         foreach ($this->entries as &$entry) {
+            $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
             if ($entry['id'] === $id) {
+                if ($isArchived) {
+                    throw new \RuntimeException('Entry already archived');
+                }
                 $entry['archived'] = 'true';
                 $entry['updated_at'] = date('c');
                 $this->save();
