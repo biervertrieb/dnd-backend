@@ -4,13 +4,7 @@ use App\Services\JournalService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-class TestableJournalService extends JournalService
-{
-    public function __construct(string $filePath)
-    {
-        parent::__construct($filePath);
-    }
-}
+require_once 'HelperClasses.php';
 
 #[CoversClass(JournalService::class)]
 class JournalServiceTest extends TestCase
