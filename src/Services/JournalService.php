@@ -59,7 +59,7 @@ class JournalService extends \App\Util\Singleton
     {
         $returnEntries = [];
         foreach ($this->entries as $entry) {
-            $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
+            $isArchived = array_key_exists('archived', $entry) && $entry['archived'] === true;
             if ($archive === $isArchived)
                 $returnEntries[] = $entry;
         }
@@ -94,7 +94,7 @@ class JournalService extends \App\Util\Singleton
     {
         foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
-                $entry['archived'] = 'true';
+                $entry['archived'] = true;
                 $entry['updated_at'] = date('c');
                 $this->save();
                 return $entry;
