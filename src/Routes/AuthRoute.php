@@ -150,7 +150,15 @@ $app->group('/auth', function ($group) use ($userSvc) {
      * response: {status: 'ok', user: {id: int, username: string}} or {status: 'error', message: string}
      */
     $group->get('/me', function (Request $request, Response $response) {
+        $authHeader = $request->getHeaderLine('Authorization');
+        if (!$authHeader || !preg_match('/Bearer\s+(\S+)/', $authHeader, $matches)) {
+            $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'No token provided']));
+            return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+        }
+        $token = $matches[1];
         try {
+            $user = JWT::decode($token);
+            // Token was already validated in middleware, so just return user info
             $response->getBody()->write(json_encode(
                 [
                     'status' => 'ok',
