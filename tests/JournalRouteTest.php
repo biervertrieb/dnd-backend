@@ -75,16 +75,16 @@ class JournalRouteTest extends TestCase
         $body = (string) $response->getBody();
         $data = json_decode($body, true);
         $this->assertIsArray($data);
-        $this->assertEquals('Session 3', $data['title']);
-        $this->assertEquals('We met a dragon!', $data['body']);
-        $this->assertEquals(3, $data['day']);
+        $this->assertEquals('Session 3', $data['entry']['title']);
+        $this->assertEquals('We met a dragon!', $data['entry']['body']);
+        $this->assertEquals(3, $data['entry']['day']);
 
         // Verify it was added
         $entries = $this->service->getEntries();
         $this->assertCount(3, $entries);
     }
 
-    public function testAddEntryRouteValidationError()
+    public function testAddEntryRouteTitleValidationError()
     {
         $invalidEntry = [
             'title' => '',
@@ -103,5 +103,96 @@ class JournalRouteTest extends TestCase
         $this->assertIsArray($data);
         $this->assertEquals('error', $data['status']);
         $this->assertStringContainsString('Title is empty', $data['message']);
+    }
+
+    public function testAddEntryRouteDayValidationError()
+    {
+        $invalidEntry = [
+            'title' => 'Invalid Day',
+            'body' => 'This entry has an invalid day',
+            'day' => 'a'
+        ];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($invalidEntry);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+        $this->assertIsArray($data);
+        $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Day must be an integer', $data['message']);
+    }
+
+    public function testAddEntryRouteBodyValidationError()
+    {
+        $invalidEntry = [
+            'title' => 'No Body',
+            'body' => '',
+            'day' => 5
+        ];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($invalidEntry);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+        $this->assertIsArray($data);
+        $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Body is empty', $data['message']);
+    }
+
+    public function testUpdateEntryRoute()
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $updatedData = [
+            'title' => 'Updated Session 2',
+            'body' => 'We found an even bigger treasure!',
+            'day' => 2
+        ];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+        $this->assertIsArray($data);
+        $this->assertEquals('Updated Session 2', $data['entry']['title']);
+        $this->assertEquals('We found an even bigger treasure!', $data['entry']['body']);
+
+        // Verify it was updated
+        $updatedEntry = $this->service->getEntries()[0];
+        $this->assertEquals('Updated Session 2', $updatedEntry['title']);
+    }
+
+    public function testDeleteEntryRoute()
+    {
+        $entries = $this->service->getEntries();
+        $entryToDelete = $entries[0];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('DELETE', '/journal/' . $entryToDelete['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+        $this->assertIsArray($data);
+        $this->assertEquals('ok', $data['status']);
+        $this->assertEquals('true', $data['entry']['archived']);
+
+        // Verify it was archived
+        $remainingEntries = $this->service->getEntries();
+        $this->assertCount(1, $remainingEntries);
+        $this->assertNotEquals($entryToDelete['id'], $remainingEntries[0]['id']);
     }
 }
