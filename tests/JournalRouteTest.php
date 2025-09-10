@@ -2,6 +2,7 @@
 
 use App\Services\JournalService;
 use App\Util\JWT;
+use Dotenv\Dotenv;
 use PHPUnit\Framework\Attributes\CoversFunction;
 use PHPUnit\Framework\TestCase;
 use Slim\Factory\AppFactory;
@@ -19,6 +20,19 @@ class JournalRouteTest extends TestCase
     private JournalService $service;
     private App $app;
     private string $testtoken;
+
+    public static function setUpBeforeClass(): void
+    {
+        $envPath = __DIR__ . '/../.env';
+        if (!file_exists($envPath)) {
+            throw new \RuntimeException(".env file not found at $envPath");
+        }
+        $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+        $dotenv->load();
+        if (empty($_ENV['JWT_SECRET'] ?? null)) {
+            throw new \RuntimeException('JWT_SECRET not set in .env file');
+        }
+    }
 
     protected function setUp(): void
     {
