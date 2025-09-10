@@ -6,7 +6,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
-$comp_svc = new CompendiumService();
+$comp_svc = CompendiumService::getInstance();
 
 $app->group('/compendium', function ($group) use ($comp_svc) {
     $group->get('', function (Request $request, Response $response) use ($comp_svc) {
