@@ -2,6 +2,7 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+use App\Services\JournalService;
 use Dotenv\Dotenv;
 
 Dotenv::createImmutable(__DIR__ . '/../')->load();
@@ -19,5 +20,7 @@ $routeFiles = glob(__DIR__ . '/../src/Routes/*Route.php');
 foreach ($routeFiles as $file) {
     require $file;
 }
+
+registerJournalRoutes($app, JournalService::getInstance());
 
 $app->run();

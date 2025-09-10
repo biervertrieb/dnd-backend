@@ -54,5 +54,3 @@ function registerJournalRoutes(App $app, JournalService $svc): void
         });
     })->add(new JWTAuthMiddleware());
 }
-
-registerJournalRoutes($app, JournalService::getInstance());
