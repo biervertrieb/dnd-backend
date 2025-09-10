@@ -52,6 +52,8 @@ class JournalService extends \App\Util\Singleton
      */
     public function addEntry(string $title, string $body, int $day): array
     {
+        $title = trim($title);
+        $body = trim($body);
         self::validateEntry($title, $body, $day);
         $entry = [
             'id' => uniqid(),
@@ -82,6 +84,8 @@ class JournalService extends \App\Util\Singleton
      */
     public function updateEntry(string $id, ?string $title, ?string $body, ?int $day)
     {
+        $title = trim($title);
+        $body = trim($body);
         self::validateEntry($title, $body, $day);
         foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
