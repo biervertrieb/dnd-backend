@@ -7,10 +7,9 @@ use App\Util\Slug;
 /**
  * file based compendium service
  */
-class CompendiumService
+class CompendiumService extends \App\Util\Singleton
 {
     private array $entries;
-    private bool $loaded;
     private string $file;
 
     public function __construct(string $file = __DIR__ . '/../../data/compendium.json')
@@ -22,31 +21,8 @@ class CompendiumService
         if (!file_exists($this->file)) {
             file_put_contents($this->file, json_encode([]));
         }
-        $this->entries = [];
-        $this->loaded = false;
-    }
-
-    /**
-     * @return array<int,array<string,mixed>>
-     */
-    private function load(): void
-    {
-        if (!$this->loaded) {
-            $raw = file_get_contents($this->file);
-            $this->entries = $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
-            $this->loaded = true;
-            // make sure every entry has slug
-            $tosave = false;
-            foreach ($this->entries as &$entry) {
-                if (!array_key_exists('slug', $entry)) {
-                    $base = Slug::make($entry['title']);
-                    $entry['slug'] = $this->uniqueSlug($base);
-                    $tosave = true;
-                }
-            }
-            if ($tosave)
-                $this->save();
-        }
+        $raw = file_get_contents($this->file);
+        $this->entries = $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
     }
 
     /**
@@ -84,7 +60,6 @@ class CompendiumService
         $tags = array_values(array_filter($tags, function ($tag) {
             return is_string($tag) && trim($tag) !== '';
         }));
-        $this->load();
         $base = Slug::make($title);
         $slug = $this->uniqueSlug($base);
         $entry = [
@@ -103,7 +78,6 @@ class CompendiumService
 
     public function getEntries(bool $archive = false): array
     {
-        $this->load();
         $returnEntries = [];
         foreach ($this->entries as $entry) {
             $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
@@ -115,7 +89,6 @@ class CompendiumService
 
     public function getByID(string $id)
     {
-        $this->load();
         foreach ($this->entries as $entry) {
             if ($entry['id'] === $id)
                 return $entry;
@@ -147,7 +120,6 @@ class CompendiumService
         $tags = array_values(array_filter($tags, function ($tag) {
             return is_string($tag) && trim($tag) !== '';
         }));
-        $this->load();
         foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['title'] = $title;
@@ -163,7 +135,6 @@ class CompendiumService
 
     public function deleteEntry(string $id)
     {
-        $this->load();
         foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['archived'] = 'true';
