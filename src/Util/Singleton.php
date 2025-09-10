@@ -25,7 +25,7 @@ class Singleton
         // Prevent cloning
     }
 
-    protected function __wakeup()
+    public function __wakeup()
     {
         // Prevent unserialization
     }
