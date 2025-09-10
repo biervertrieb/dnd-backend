@@ -5,12 +5,12 @@ namespace App\Services;
 /**
  * file based journal service
  */
-class JournalService
+class JournalService extends \App\Util\Singleton
 {
     private array $entries = [];
     private string $file;
 
-    public function __construct(string $file = __DIR__ . '/../../data/journal.json')
+    protected function __construct(string $file = __DIR__ . '/../../data/journal.json')
     {
         $this->file = $file;
         if (!is_dir(dirname($this->file))) {
@@ -19,23 +19,16 @@ class JournalService
         if (!file_exists($this->file)) {
             file_put_contents($this->file, json_encode([]));
         }
-    }
-
-    /**
-     * @return array<int,array<string,mixed>>
-     */
-    private function load(): array
-    {
         $raw = file_get_contents($this->file);
-        return $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
+        $this->entries = $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
     }
 
     /**
      * @param array<int,array<string,mixed>> $entries
      */
-    private function save(array $entries): void
+    private function save(): void
     {
-        file_put_contents($this->file, json_encode($entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        file_put_contents($this->file, json_encode($this->entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
     /**
@@ -49,7 +42,6 @@ class JournalService
             throw new \RuntimeException('Body is empty');
         if ($day === null || $day === '')
             throw new \RuntimeException('Day is empty');
-        $entries = $this->load();
         $entry = [
             'id' => uniqid(),
             'title' => $title,
@@ -58,16 +50,15 @@ class JournalService
             'created_at' => date('c'),
             'updated_at' => date('c'),
         ];
-        array_unshift($entries, $entry);
-        $this->save($entries);
+        array_unshift($this->entries, $entry);
+        $this->save();
         return $entry;
     }
 
     public function getEntries(bool $archive = false): array
     {
-        $allEntries = $this->load();
         $returnEntries = [];
-        foreach ($allEntries as $entry) {
+        foreach ($this->entries as $entry) {
             $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
             if ($archive === $isArchived)
                 $returnEntries[] = $entry;
@@ -86,14 +77,13 @@ class JournalService
             throw new \RuntimeException('Body is empty');
         if ($day === null || $day === '')
             throw new \RuntimeException('Day is empty');
-        $entries = $this->load();
-        foreach ($entries as &$entry) {
+        foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['title'] = $title;
                 $entry['body'] = $body;
                 $entry['day'] = $day;
                 $entry['updated_at'] = date('c');
-                $this->save($entries);
+                $this->save();
                 return $entry;
             }
         }
@@ -102,12 +92,11 @@ class JournalService
 
     public function deleteEntry(string $id)
     {
-        $entries = $this->load();
-        foreach ($entries as &$entry) {
+        foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['archived'] = 'true';
                 $entry['updated_at'] = date('c');
-                $this->save($entries);
+                $this->save();
                 return $entry;
             }
         }
