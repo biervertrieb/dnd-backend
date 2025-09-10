@@ -31,17 +31,28 @@ class JournalService extends \App\Util\Singleton
         file_put_contents($this->file, json_encode($this->entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
+    private static function validateEntry(string $title, string $body, int $day): void
+    {
+        if ($title === null || trim($title) === '')
+            throw new \RuntimeException('Title is empty');
+        if ($title !== null && mb_strlen($title) > 255)
+            throw new \RuntimeException('Title exceeds 255 characters');
+        if ($body === null || trim($body) === '')
+            throw new \RuntimeException('Body is empty');
+        if ($body !== null && mb_strlen($body) > 10000)
+            throw new \RuntimeException('Body exceeds 10000 characters');
+        if ($day === null || $day === '')
+            throw new \RuntimeException('Day is empty');
+        if (abs($day) > 50000)
+            throw new \RuntimeException('Day is out of range');
+    }
+
     /**
      * @return array<string,mixed>
      */
     public function addEntry(string $title, string $body, int $day): array
     {
-        if ($title === null || $title === '')
-            throw new \RuntimeException('Title is empty');
-        if ($body === null || $body === '')
-            throw new \RuntimeException('Body is empty');
-        if ($day === null || $day === '')
-            throw new \RuntimeException('Day is empty');
+        self::validateEntry($title, $body, $day);
         $entry = [
             'id' => uniqid(),
             'title' => $title,
@@ -71,12 +82,7 @@ class JournalService extends \App\Util\Singleton
      */
     public function updateEntry(string $id, ?string $title, ?string $body, ?int $day)
     {
-        if ($title === null || $title === '')
-            throw new \RuntimeException('Title is empty');
-        if ($body === null || $body === '')
-            throw new \RuntimeException('Body is empty');
-        if ($day === null || $day === '')
-            throw new \RuntimeException('Day is empty');
+        self::validateEntry($title, $body, $day);
         foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['title'] = $title;

@@ -17,8 +17,25 @@ function registerJournalRoutes(App $app, JournalService $svc): void
 
         $group->post('', function (Request $request, Response $response) use ($svc) {
             $input = $request->getParsedBody();
+            if (!is_array($input)) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing or invalid fields']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+            if (!isset($input['title'])) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing Title']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+            if (!isset($input['body'])) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing Body']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
             if (!is_numeric($input['day']) || intval($input['day']) != $input['day']) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Day must be an integer']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+            $contentType = $request->getHeaderLine('Content-Type');
+            if (strpos($contentType, 'application/json') === false) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Content-Type must be application/json']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
             try {
@@ -34,8 +51,25 @@ function registerJournalRoutes(App $app, JournalService $svc): void
         $group->put('/{id}', function (Request $request, Response $response, array $args) use ($svc) {
             $id = $args['id'];
             $input = $request->getParsedBody();
+            if (!is_array($input)) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing or invalid fields']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+            if (!isset($input['title'])) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing Title']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+            if (!isset($input['body'])) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing Body']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
             if (!is_numeric($input['day']) || intval($input['day']) != $input['day']) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Day must be an integer']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+            $contentType = $request->getHeaderLine('Content-Type');
+            if (strpos($contentType, 'application/json') === false) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Content-Type must be application/json']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
             try {
