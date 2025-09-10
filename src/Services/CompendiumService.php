@@ -50,16 +50,33 @@ class CompendiumService extends \App\Util\Singleton
      */
     public function addEntry(string $title, string $body, array $tags): array
     {
-        if ($title === null || $title === '')
+        if ($title === null || $title === '') {
             throw new \RuntimeException('Title is empty');
-        if ($body === null || $body === '')
+        }
+        if (mb_strlen($title) > 255) {
+            throw new \RuntimeException('Title exceeds 255 characters');
+        }
+        if ($body === null || $body === '') {
             throw new \RuntimeException('Body is empty');
-        if (!is_array($tags))
+        }
+        if (mb_strlen($body) > 10000) {
+            throw new \RuntimeException('Body exceeds 10,000 characters');
+        }
+        if (!is_array($tags)) {
             throw new \RuntimeException('Tags must be an array');
-        // Filter tags to only non-empty strings
+        }
+        // Filter tags to only non-empty strings and check tag length
         $tags = array_values(array_filter($tags, function ($tag) {
-            return is_string($tag) && trim($tag) !== '';
+            return is_string($tag) && trim($tag) !== '' && mb_strlen($tag) <= 50;
         }));
+        if (count($tags) > 10) {
+            throw new \RuntimeException('No more than 10 tags allowed');
+        }
+        foreach ($tags as $tag) {
+            if (mb_strlen($tag) > 50) {
+                throw new \RuntimeException('Tag exceeds 50 characters');
+            }
+        }
         $base = Slug::make($title);
         $slug = $this->uniqueSlug($base);
         $entry = [
@@ -110,16 +127,33 @@ class CompendiumService extends \App\Util\Singleton
      */
     public function updateEntry(string $id, ?string $title, ?string $body, ?array $tags)
     {
-        if ($title === null || $title === '')
+        if ($title === null || $title === '') {
             throw new \RuntimeException('Title is empty');
-        if ($body === null || $body === '')
+        }
+        if (mb_strlen($title) > 255) {
+            throw new \RuntimeException('Title exceeds 255 characters');
+        }
+        if ($body === null || $body === '') {
             throw new \RuntimeException('Body is empty');
-        if (!is_array($tags))
+        }
+        if (mb_strlen($body) > 10000) {
+            throw new \RuntimeException('Body exceeds 10,000 characters');
+        }
+        if (!is_array($tags)) {
             throw new \RuntimeException('Tags must be an array');
-        // Filter tags to only non-empty strings
+        }
+        // Filter tags to only non-empty strings and check tag length
         $tags = array_values(array_filter($tags, function ($tag) {
-            return is_string($tag) && trim($tag) !== '';
+            return is_string($tag) && trim($tag) !== '' && mb_strlen($tag) <= 50;
         }));
+        if (count($tags) > 10) {
+            throw new \RuntimeException('No more than 10 tags allowed');
+        }
+        foreach ($tags as $tag) {
+            if (mb_strlen($tag) > 50) {
+                throw new \RuntimeException('Tag exceeds 50 characters');
+            }
+        }
         foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
                 $entry['title'] = $title;
