@@ -6,10 +6,11 @@ class Singleton
 {
     private static array $instances = [];
 
-    public static function getInstance(string $class)
+    public static function getInstance()
     {
+        $class = static::class;
         if (!isset(self::$instances[$class])) {
-            self::$instances[$class] = new $class();
+            self::$instances[$class] = new static();
         }
         return self::$instances[$class];
     }
