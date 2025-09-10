@@ -45,42 +45,48 @@ class CompendiumService extends \App\Util\Singleton
         return $slug;
     }
 
+    private static function validateEntry(string &$title, string &$body, array &$tags): void
+    {
+        if ($title === null || trim($title) === '') {
+            throw new \RuntimeException('Title is empty');
+        }
+        if ($title !== null && mb_strlen($title) > 255) {
+            throw new \RuntimeException('Title exceeds 255 characters');
+        }
+        if ($body === null || trim($body) === '') {
+            throw new \RuntimeException('Body is empty');
+        }
+        if ($body !== null && mb_strlen($body) > 10000) {
+            throw new \RuntimeException('Body exceeds 10000 characters');
+        }
+        if (!is_array($tags)) {
+            throw new \RuntimeException('Tags must be an array');
+        }
+        $count = 0;
+        foreach ($tags as $tag) {
+            if (!is_string($tag)) {
+                throw new \RuntimeException('Tag must be a string');
+            }
+            $tag = trim($tag);
+            if ($tag === '') {
+                throw new \RuntimeException('Tag cannot be empty');
+            }
+            if (mb_strlen($tag) > 50) {
+                throw new \RuntimeException('Tag exceeds 50 characters');
+            }
+            $count++;
+        }
+        if ($count > 10) {
+            throw new \RuntimeException('No more than 10 tags allowed');
+        }
+    }
+
     /**
      * @return array<string,mixed>
      */
     public function addEntry(string $title, string $body, array $tags): array
     {
-        $title = trim($title);
-        $body = trim($body);
-        if ($title === '') {
-            throw new \RuntimeException('Title is empty or whitespace only');
-        }
-        if (mb_strlen($title) > 255) {
-            throw new \RuntimeException('Title exceeds 255 characters');
-        }
-        if ($body === '') {
-            throw new \RuntimeException('Body is empty or whitespace only');
-        }
-        if (mb_strlen($body) > 10000) {
-            throw new \RuntimeException('Body exceeds 10,000 characters');
-        }
-        if (!is_array($tags)) {
-            throw new \RuntimeException('Tags must be an array');
-        }
-        $tags = array_map(function ($tag) {
-            return is_string($tag) ? trim($tag) : $tag;
-        }, $tags);
-        $tags = array_values(array_filter($tags, function ($tag) {
-            return is_string($tag) && $tag !== '' && mb_strlen($tag) <= 50;
-        }));
-        if (count($tags) > 10) {
-            throw new \RuntimeException('No more than 10 tags allowed');
-        }
-        foreach ($tags as $tag) {
-            if (!is_string($tag) || $tag === '' || mb_strlen($tag) > 50) {
-                throw new \RuntimeException('Tag must be non-empty and ≤ 50 chars');
-            }
-        }
+        self::validateEntry($title, $body, $tags);
         $base = Slug::make($title);
         $slug = $this->uniqueSlug($base);
         $entry = [
@@ -132,39 +138,9 @@ class CompendiumService extends \App\Util\Singleton
     /**
      * @return array<string,mixed>
      */
-    public function updateEntry(string $id, ?string $title, ?string $body, ?array $tags)
+    public function updateEntry(string $id, string $title, string $body, array $tags)
     {
-        $title = is_string($title) ? trim($title) : '';
-        $body = is_string($body) ? trim($body) : '';
-        if ($title === '') {
-            throw new \RuntimeException('Title is empty or whitespace only');
-        }
-        if (mb_strlen($title) > 255) {
-            throw new \RuntimeException('Title exceeds 255 characters');
-        }
-        if ($body === '') {
-            throw new \RuntimeException('Body is empty or whitespace only');
-        }
-        if (mb_strlen($body) > 10000) {
-            throw new \RuntimeException('Body exceeds 10,000 characters');
-        }
-        if (!is_array($tags)) {
-            throw new \RuntimeException('Tags must be an array');
-        }
-        $tags = array_map(function ($tag) {
-            return is_string($tag) ? trim($tag) : $tag;
-        }, $tags);
-        $tags = array_values(array_filter($tags, function ($tag) {
-            return is_string($tag) && $tag !== '' && mb_strlen($tag) <= 50;
-        }));
-        if (count($tags) > 10) {
-            throw new \RuntimeException('No more than 10 tags allowed');
-        }
-        foreach ($tags as $tag) {
-            if (!is_string($tag) || $tag === '' || mb_strlen($tag) > 50) {
-                throw new \RuntimeException('Tag must be non-empty and ≤ 50 chars');
-            }
-        }
+        self::validateEntry($title, $body, $tags);
         foreach ($this->entries as &$entry) {
             $isArchived = array_key_exists('archived', $entry) && $entry['archived'] == 'true';
             if ($entry['id'] === $id) {
