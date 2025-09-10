@@ -81,7 +81,7 @@ class JournalServiceTest extends TestCase
         $entry = $service->addEntry('Title', 'Body', 1);
         sleep(1);
         $deleted = $service->deleteEntry($entry['id']);
-        $this->assertSame('true', $deleted['archived']);
+        $this->assertSame(true, $deleted['archived']);
         $this->assertNotEquals($entry['updated_at'], $deleted['updated_at']);
     }
 
