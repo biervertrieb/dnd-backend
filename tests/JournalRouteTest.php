@@ -345,4 +345,399 @@ class JournalRouteTest extends TestCase
 
         $this->assertEquals(401, $response->getStatusCode());
     }
+
+    public function testAddEntryMalformedJson(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json');
+        $body = '{"title": "Malformed", "body": "Missing end brace", "day": 1';
+        $request = $request->withBody((new \Slim\Psr7\Stream(fopen('php://temp', 'r+'))));
+        $request->getBody()->write($body);
+        $request->getBody()->rewind();
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryWrongContentType(): void
+    {
+        $newEntry = ['title' => 'Session', 'body' => 'Body', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'text/plain')
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryPayloadTooLarge(): void
+    {
+        $largeBody = str_repeat('A', 1024 * 1024);  // 1MB
+        $newEntry = ['title' => 'Big', 'body' => $largeBody, 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryTitleTooLong(): void
+    {
+        $longTitle = str_repeat('T', 256);
+        $newEntry = ['title' => $longTitle, 'body' => 'Valid body', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryBodyTooLong(): void
+    {
+        $longBody = str_repeat('B', 10001);
+        $newEntry = ['title' => 'Valid', 'body' => $longBody, 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryInvalidToken(): void
+    {
+        $newEntry = ['title' => 'Session', 'body' => 'Body', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Authorization', 'Bearer invalidtoken')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    public function testUpdateEntryMalformedJson(): void
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json');
+        $body = '{"title": "Malformed", "body": "Missing end brace", "day": 1';
+        $request = $request->withBody((new \Slim\Psr7\Stream(fopen('php://temp', 'r+'))));
+        $request->getBody()->write($body);
+        $request->getBody()->rewind();
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testUpdateEntryWrongContentType(): void
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $updatedData = ['title' => 'Session', 'body' => 'Body', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'text/plain')
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testUpdateEntryPayloadTooLarge(): void
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $largeBody = str_repeat('A', 1024 * 1024);  // 1MB
+        $updatedData = ['title' => 'Big', 'body' => $largeBody, 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testUpdateEntryTitleTooLong(): void
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $longTitle = str_repeat('T', 256);
+        $updatedData = ['title' => $longTitle, 'body' => 'Valid body', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testUpdateEntryBodyTooLong(): void
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $longBody = str_repeat('B', 10001);
+        $updatedData = ['title' => 'Valid', 'body' => $longBody, 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testUpdateEntryInvalidToken(): void
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $updatedData = ['title' => 'Session', 'body' => 'Body', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer invalidtoken')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    // --- Edge Cases ---
+
+    public function testAddEntryEmptyBody(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryBodyNotObject(): void
+    {
+        // Array
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody(['not', 'an', 'object']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+
+        // String
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody('justastring');
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+
+        // Number
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody(123);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryExtraFields(): void
+    {
+        $newEntry = ['title' => 'Extra', 'body' => 'Has extra fields.', 'day' => 1, 'extra' => 'unexpected'];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals('ok', $data['status']);
+        $this->assertEquals('Extra', $data['entry']['title']);
+    }
+
+    public function testAddEntryDuplicateKeys(): void
+    {
+        $rawJson = '{"title": "Session", "title": "Duplicate", "body": "Body", "day": 1}';
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $stream = new \Slim\Psr7\Stream(fopen('php://temp', 'r+'));
+        $stream->write($rawJson);
+        $stream->rewind();
+        $request = $request->withBody($stream);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals('Duplicate', $data['entry']['title']);
+    }
+
+    public function testAddEntryBooleanNumericTypes(): void
+    {
+        $newEntry = ['title' => true, 'body' => 123, 'day' => false];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryWhitespaceOnlyStrings(): void
+    {
+        $newEntry = ['title' => '   ', 'body' => "\t\n", 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryBoundaryValues(): void
+    {
+        $boundaryTitle = str_repeat('T', 255);
+        $boundaryBody = str_repeat('B', 10000);
+        $boundaryDay = PHP_INT_MAX;
+        $newEntry = ['title' => $boundaryTitle, 'body' => $boundaryBody, 'day' => $boundaryDay];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals($boundaryTitle, $data['entry']['title']);
+        $this->assertEquals($boundaryBody, $data['entry']['body']);
+        $this->assertEquals($boundaryDay, $data['entry']['day']);
+    }
+
+    public function testAddEntrySpecialUnicodeChars(): void
+    {
+        $newEntry = ['title' => 'Tést 🚀', 'body' => 'Bödy 💡', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals('Tést 🚀', $data['entry']['title']);
+        $this->assertEquals('Bödy 💡', $data['entry']['body']);
+    }
+
+    public function testUnsupportedHttpMethods(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PATCH', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertTrue(in_array($response->getStatusCode(), [404, 405]));
+
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('OPTIONS', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertTrue(in_array($response->getStatusCode(), [200, 404, 405]));
+
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('HEAD', '/journal')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertTrue(in_array($response->getStatusCode(), [200, 404, 405]));
+    }
+
+    public function testAddEntryDuplicateTitle(): void
+    {
+        $newEntry1 = ['title' => 'Unique', 'body' => 'Body', 'day' => 1];
+        $newEntry2 = ['title' => 'Unique', 'body' => 'Body2', 'day' => 2];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry1);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data1 = json_decode((string) $response->getBody(), true);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry2);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data2 = json_decode((string) $response->getBody(), true);
+        $this->assertNotEquals($data1['entry']['id'], $data2['entry']['id']);
+    }
+
+    public function testDeleteAlreadyArchivedEntry(): void
+    {
+        $entry = $this->service->getEntries()[0];
+        $id = $entry['id'];
+        // Archive
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('DELETE', "/journal/{$id}")
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        // Try again
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testUpdateDeleteArchivedEntry(): void
+    {
+        $entry = $this->service->getEntries()[0];
+        $id = $entry['id'];
+        // Archive
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('DELETE', "/journal/{$id}")
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $this->app->handle($request);
+        // Try update
+        $updatedData = ['title' => 'Archived', 'body' => 'Archived', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', "/journal/{$id}")
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+    }
+
+    public function testAuthorizationHeaderWrongScheme(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('GET', '/journal')
+            ->withHeader('Authorization', 'Basic ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    public function testMalformedJwtToken(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('GET', '/journal')
+            ->withHeader('Authorization', 'Bearer malformed.token');
+        $response = $this->app->handle($request);
+        $this->assertEquals(401, $response->getStatusCode());
+    }
 }

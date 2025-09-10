@@ -698,6 +698,83 @@ class CompendiumRouteTest extends TestCase
         $this->assertEquals(401, $response->getStatusCode());
     }
 
+    // --- Additional Edge Cases ---
+
+    public function testAddEntryBodyNotObject(): void
+    {
+        // Array (should work, but not valid for route)
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody(['not', 'an', 'object']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+
+        // String and Number: Slim throws InvalidArgumentException
+        $this->expectException(\InvalidArgumentException::class);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody('justastring');
+        $this->app->handle($request);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody(123);
+        $this->app->handle($request);
+    }
+
+    public function testAddEntryDuplicateKeys(): void
+    {
+        $rawJson = '{"title": "Sword", "title": "Duplicate", "body": "Body", "tags": ["tag"]}';
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $stream = new \Slim\Psr7\Stream(fopen('php://temp', 'r+'));
+        $stream->write($rawJson);
+        $stream->rewind();
+        $request = $request->withBody($stream);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testUnsupportedHttpMethods(): void
+    {
+        // PATCH: Slim throws HttpMethodNotAllowedException
+        $this->expectException(\Slim\Exception\HttpMethodNotAllowedException::class);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PATCH', '/compendium')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $this->app->handle($request);
+
+        // OPTIONS and HEAD: may throw exception or return response
+        try {
+            $request = (new ServerRequestFactory())
+                ->createServerRequest('OPTIONS', '/compendium')
+                ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+            $response = $this->app->handle($request);
+            $this->assertTrue(in_array($response->getStatusCode(), [200, 404, 405]));
+        } catch (\Slim\Exception\HttpMethodNotAllowedException $e) {
+            $this->assertTrue(true);  // Accept exception as valid
+        }
+
+        try {
+            $request = (new ServerRequestFactory())
+                ->createServerRequest('HEAD', '/compendium')
+                ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+            $response = $this->app->handle($request);
+            $this->assertTrue(in_array($response->getStatusCode(), [200, 404, 405]));
+        } catch (\Slim\Exception\HttpMethodNotAllowedException $e) {
+            $this->assertTrue(true);  // Accept exception as valid
+        }
+    }
+
     public function testAddEntryPayloadTooLarge(): void
     {
         $largeBody = str_repeat('A', 1024 * 1024);  // 1MB
