@@ -174,6 +174,75 @@ class JournalRouteTest extends TestCase
         $this->assertEquals('Updated Session 2', $updatedEntry['title']);
     }
 
+    public function testUpdateEntryRouteTitleValidationError()
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $invalidData = [
+            'title' => '',
+            'body' => 'This body is fine',
+            'day' => 2
+        ];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($invalidData);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+        $this->assertIsArray($data);
+        $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Title is empty', $data['message']);
+    }
+
+    public function testUpdateEntryRouteDayValidationError()
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $invalidData = [
+            'title' => 'Valid Title',
+            'body' => 'This body is fine',
+            'day' => 'notanumber'
+        ];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($invalidData);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+        $this->assertIsArray($data);
+        $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Day must be an integer', $data['message']);
+    }
+
+    public function testUpdateEntryRouteBodyValidationError()
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $invalidData = [
+            'title' => 'Valid Title',
+            'body' => '',
+            'day' => 2
+        ];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($invalidData);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+        $this->assertIsArray($data);
+        $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Body is empty', $data['message']);
+    }
+
     public function testDeleteEntryRoute()
     {
         $entries = $this->service->getEntries();
