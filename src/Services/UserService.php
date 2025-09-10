@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-class UserService
+class UserService extends \App\Util\Singleton
 {
     private array $users;
     private string $file;
 
-    public function __construct(string $file = __DIR__ . '/../../data/users.json')
+    protected function __construct(string $file = __DIR__ . '/../../data/users.json')
     {
         $this->file = $file;
         if (!is_dir(dirname($this->file))) {
@@ -16,13 +16,8 @@ class UserService
         if (!file_exists($this->file)) {
             file_put_contents($this->file, json_encode([]));
         }
-        $this->users = $this->load();
-    }
-
-    private function load(): array
-    {
         $raw = file_get_contents($this->file);
-        return $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
+        $this->users = $raw ? json_decode($raw, true, 512, JSON_THROW_ON_ERROR) : [];
     }
 
     private function save(): void
