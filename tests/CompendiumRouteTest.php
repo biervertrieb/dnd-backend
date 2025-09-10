@@ -54,6 +54,7 @@ class CompendiumRouteTest extends TestCase
         if (file_exists($this->tmpFile)) {
             unlink($this->tmpFile);
         }
+        unset($this->app, $this->service);
     }
 
     public function testGetAllEntries(): void
@@ -158,6 +159,7 @@ class CompendiumRouteTest extends TestCase
         $body = (string) $response->getBody();
         $data = json_decode($body, true);
         $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Title', $data['message']);
     }
 
     public function testAddEntryMissingBody(): void
@@ -175,6 +177,7 @@ class CompendiumRouteTest extends TestCase
         $body = (string) $response->getBody();
         $data = json_decode($body, true);
         $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Body', $data['message']);
     }
 
     public function testAddEntryWrongTagsType(): void
@@ -192,6 +195,7 @@ class CompendiumRouteTest extends TestCase
         $body = (string) $response->getBody();
         $data = json_decode($body, true);
         $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Tags', $data['message']);
     }
 
     public function testAddEntryMalformedJson(): void
@@ -255,6 +259,7 @@ class CompendiumRouteTest extends TestCase
         $this->assertEquals(400, $response->getStatusCode());
         $data = json_decode((string) $response->getBody(), true);
         $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Missing', $data['message']);
     }
 
     public function testAddEntryWrongContentType(): void
@@ -330,6 +335,7 @@ class CompendiumRouteTest extends TestCase
         $this->assertEquals(400, $response->getStatusCode());
         $data = json_decode((string) $response->getBody(), true);
         $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Title', $data['message']);
     }
 
     public function testUpdateEntryMissingBody(): void
@@ -346,6 +352,7 @@ class CompendiumRouteTest extends TestCase
         $this->assertEquals(400, $response->getStatusCode());
         $data = json_decode((string) $response->getBody(), true);
         $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Body', $data['message']);
     }
 
     public function testUpdateEntryWrongTagsType(): void
@@ -362,6 +369,7 @@ class CompendiumRouteTest extends TestCase
         $this->assertEquals(400, $response->getStatusCode());
         $data = json_decode((string) $response->getBody(), true);
         $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Tags', $data['message']);
     }
 
     public function testUpdateEntryNullValues(): void
@@ -378,6 +386,7 @@ class CompendiumRouteTest extends TestCase
         $this->assertEquals(400, $response->getStatusCode());
         $data = json_decode((string) $response->getBody(), true);
         $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Missing', $data['message']);
     }
 
     public function testUpdateEntryNotFound(): void
