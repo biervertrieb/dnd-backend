@@ -50,14 +50,16 @@ class CompendiumService extends \App\Util\Singleton
      */
     public function addEntry(string $title, string $body, array $tags): array
     {
-        if ($title === null || $title === '') {
-            throw new \RuntimeException('Title is empty');
+        $title = trim($title);
+        $body = trim($body);
+        if ($title === '') {
+            throw new \RuntimeException('Title is empty or whitespace only');
         }
         if (mb_strlen($title) > 255) {
             throw new \RuntimeException('Title exceeds 255 characters');
         }
-        if ($body === null || $body === '') {
-            throw new \RuntimeException('Body is empty');
+        if ($body === '') {
+            throw new \RuntimeException('Body is empty or whitespace only');
         }
         if (mb_strlen($body) > 10000) {
             throw new \RuntimeException('Body exceeds 10,000 characters');
@@ -65,16 +67,18 @@ class CompendiumService extends \App\Util\Singleton
         if (!is_array($tags)) {
             throw new \RuntimeException('Tags must be an array');
         }
-        // Filter tags to only non-empty strings and check tag length
+        $tags = array_map(function ($tag) {
+            return is_string($tag) ? trim($tag) : $tag;
+        }, $tags);
         $tags = array_values(array_filter($tags, function ($tag) {
-            return is_string($tag) && trim($tag) !== '' && mb_strlen($tag) <= 50;
+            return is_string($tag) && $tag !== '' && mb_strlen($tag) <= 50;
         }));
         if (count($tags) > 10) {
             throw new \RuntimeException('No more than 10 tags allowed');
         }
         foreach ($tags as $tag) {
-            if (mb_strlen($tag) > 50) {
-                throw new \RuntimeException('Tag exceeds 50 characters');
+            if (!is_string($tag) || $tag === '' || mb_strlen($tag) > 50) {
+                throw new \RuntimeException('Tag must be non-empty and ≤ 50 chars');
             }
         }
         $base = Slug::make($title);
@@ -127,14 +131,16 @@ class CompendiumService extends \App\Util\Singleton
      */
     public function updateEntry(string $id, ?string $title, ?string $body, ?array $tags)
     {
-        if ($title === null || $title === '') {
-            throw new \RuntimeException('Title is empty');
+        $title = is_string($title) ? trim($title) : '';
+        $body = is_string($body) ? trim($body) : '';
+        if ($title === '') {
+            throw new \RuntimeException('Title is empty or whitespace only');
         }
         if (mb_strlen($title) > 255) {
             throw new \RuntimeException('Title exceeds 255 characters');
         }
-        if ($body === null || $body === '') {
-            throw new \RuntimeException('Body is empty');
+        if ($body === '') {
+            throw new \RuntimeException('Body is empty or whitespace only');
         }
         if (mb_strlen($body) > 10000) {
             throw new \RuntimeException('Body exceeds 10,000 characters');
@@ -142,16 +148,18 @@ class CompendiumService extends \App\Util\Singleton
         if (!is_array($tags)) {
             throw new \RuntimeException('Tags must be an array');
         }
-        // Filter tags to only non-empty strings and check tag length
+        $tags = array_map(function ($tag) {
+            return is_string($tag) ? trim($tag) : $tag;
+        }, $tags);
         $tags = array_values(array_filter($tags, function ($tag) {
-            return is_string($tag) && trim($tag) !== '' && mb_strlen($tag) <= 50;
+            return is_string($tag) && $tag !== '' && mb_strlen($tag) <= 50;
         }));
         if (count($tags) > 10) {
             throw new \RuntimeException('No more than 10 tags allowed');
         }
         foreach ($tags as $tag) {
-            if (mb_strlen($tag) > 50) {
-                throw new \RuntimeException('Tag exceeds 50 characters');
+            if (!is_string($tag) || $tag === '' || mb_strlen($tag) > 50) {
+                throw new \RuntimeException('Tag must be non-empty and ≤ 50 chars');
             }
         }
         foreach ($this->entries as &$entry) {

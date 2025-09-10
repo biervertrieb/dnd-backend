@@ -543,6 +543,150 @@ class CompendiumRouteTest extends TestCase
         $this->assertEquals(401, $response->getStatusCode());
     }
 
+    // --- Edge Cases ---
+
+    public function testAddEntryBooleanNumericTypes(): void
+    {
+        $newEntry = ['title' => true, 'body' => 123, 'tags' => [false, 456]];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryWhitespaceOnlyStrings(): void
+    {
+        $newEntry = ['title' => '   ', 'body' => "\t\n", 'tags' => ['   ', "\n"]];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryTagsContainNonString(): void
+    {
+        $newEntry = ['title' => 'Valid Title', 'body' => 'Valid body.', 'tags' => ['valid', 123, null]];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testAddEntryBoundaryValues(): void
+    {
+        $newEntry = ['title' => str_repeat('A', 255), 'body' => str_repeat('B', 10000), 'tags' => ['tag1', 'tag2']];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals('ok', $data['status']);
+        $this->assertEquals(str_repeat('A', 255), $data['entry']['title']);
+    }
+
+    public function testAddEntrySpecialUnicodeChars(): void
+    {
+        $newEntry = ['title' => '特殊字符', 'body' => 'Emoji 😊 and accents éàü', 'tags' => ['标签', 'emoji']];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals('ok', $data['status']);
+        $this->assertEquals('特殊字符', $data['entry']['title']);
+    }
+
+    public function testAddEntryDuplicateTitleSlug(): void
+    {
+        $newEntry1 = ['title' => 'Unique', 'body' => 'Body', 'tags' => ['tag']];
+        $newEntry2 = ['title' => 'Unique', 'body' => 'Body2', 'tags' => ['tag2']];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry1);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data1 = json_decode((string) $response->getBody(), true);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/compendium')
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($newEntry2);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data2 = json_decode((string) $response->getBody(), true);
+        $this->assertNotEquals($data1['entry']['slug'], $data2['entry']['slug']);
+    }
+
+    public function testDeleteAlreadyArchivedEntry(): void
+    {
+        $entry = $this->service->getEntries()[0];
+        $id = $entry['id'];
+        // Archive
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('DELETE', "/compendium/{$id}")
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        // Try again
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());  // Should still succeed, idempotent
+    }
+
+    public function testUpdateDeleteArchivedEntry(): void
+    {
+        $entry = $this->service->getEntries()[0];
+        $id = $entry['id'];
+        // Archive
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('DELETE', "/compendium/{$id}")
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $this->app->handle($request);
+        // Try update
+        $updatedData = ['title' => 'Archived', 'body' => 'Archived', 'tags' => ['archived']];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', "/compendium/{$id}")
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());  // Service allows update
+    }
+
+    public function testAuthorizationHeaderWrongScheme(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('GET', '/compendium')
+            ->withHeader('Authorization', 'Basic ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    public function testMalformedJwtToken(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('GET', '/compendium')
+            ->withHeader('Authorization', 'Bearer malformed.token');
+        $response = $this->app->handle($request);
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
     public function testDeleteEntryInvalidToken(): void
     {
         $entry = $this->service->getBySlug('sword');

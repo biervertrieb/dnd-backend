@@ -39,18 +39,28 @@ function registerCompendiumRoutes(App $app, CompendiumService $comp_svc): void
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Content-Type must be application/json']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
-            if (!is_array($input) || !isset($input['title']) || !isset($input['body']) || !isset($input['tags']) || !is_array($input['tags'])) {
+            // Accept duplicate keys: as long as parsed body is array and has required keys, allow
+            if (!is_array($input) || !array_key_exists('title', $input) || !array_key_exists('body', $input) || !array_key_exists('tags', $input) || !is_array($input['tags'])) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing or invalid fields']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
-            foreach ($input['tags'] as $tag) {
-                if (!is_string($tag) || mb_strlen($tag) > 50) {
-                    $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Tag exceeds 50 characters']));
+            $title = is_string($input['title']) ? trim($input['title']) : '';
+            $body = is_string($input['body']) ? trim($input['body']) : '';
+            $tags = array_map(function ($tag) {
+                return is_string($tag) ? trim($tag) : $tag;
+            }, $input['tags']);
+            if ($title === '' || $body === '') {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Title and body cannot be empty or whitespace only']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+            foreach ($tags as $tag) {
+                if (!is_string($tag) || $tag === '' || mb_strlen($tag) > 50) {
+                    $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Tag must be non-empty and ≤ 50 chars']));
                     return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
                 }
             }
             try {
-                $entry = $comp_svc->addEntry($input['title'], $input['body'], $input['tags']);
+                $entry = $comp_svc->addEntry($title, $body, $tags);
                 $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $entry]));
                 return $response->withHeader('Content-Type', 'application/json');
             } catch (\RuntimeException $e) {
@@ -76,14 +86,23 @@ function registerCompendiumRoutes(App $app, CompendiumService $comp_svc): void
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing or invalid fields']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
-            foreach ($input['tags'] as $tag) {
-                if (!is_string($tag) || mb_strlen($tag) > 50) {
-                    $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Tag exceeds 50 characters']));
+            $title = is_string($input['title']) ? trim($input['title']) : '';
+            $body = is_string($input['body']) ? trim($input['body']) : '';
+            $tags = array_map(function ($tag) {
+                return is_string($tag) ? trim($tag) : $tag;
+            }, $input['tags']);
+            if ($title === '' || $body === '') {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Title and body cannot be empty or whitespace only']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
+            foreach ($tags as $tag) {
+                if (!is_string($tag) || $tag === '' || mb_strlen($tag) > 50) {
+                    $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Tag must be non-empty and ≤ 50 chars']));
                     return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
                 }
             }
             try {
-                $updated = $comp_svc->updateEntry($id, $input['title'], $input['body'], $input['tags']);
+                $updated = $comp_svc->updateEntry($id, $title, $body, $tags);
                 $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
                 return $response->withHeader('Content-Type', 'application/json');
             } catch (\RuntimeException $e) {
