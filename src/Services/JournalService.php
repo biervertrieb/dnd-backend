@@ -31,8 +31,10 @@ class JournalService extends \App\Util\Singleton
         file_put_contents($this->file, json_encode($this->entries, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 
-    private static function validateEntry(string $title, string $body, int $day): void
+    private static function validateEntry(string &$title, string &$body, int $day): void
     {
+        $title = trim($title);
+        $body = trim($body);
         if ($title === null || trim($title) === '')
             throw new \RuntimeException('Title is empty');
         if ($title !== null && mb_strlen($title) > 255)
@@ -52,8 +54,6 @@ class JournalService extends \App\Util\Singleton
      */
     public function addEntry(string $title, string $body, int $day): array
     {
-        $title = trim($title);
-        $body = trim($body);
         self::validateEntry($title, $body, $day);
         $entry = [
             'id' => uniqid(),
@@ -84,8 +84,6 @@ class JournalService extends \App\Util\Singleton
      */
     public function updateEntry(string $id, ?string $title, ?string $body, ?int $day)
     {
-        $title = trim($title);
-        $body = trim($body);
         self::validateEntry($title, $body, $day);
         foreach ($this->entries as &$entry) {
             if ($entry['id'] === $id) {
