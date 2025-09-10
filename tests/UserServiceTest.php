@@ -4,6 +4,14 @@ use App\Services\UserService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+class TestableUserService extends UserService
+{
+    public function __construct(string $filePath)
+    {
+        parent::__construct($filePath);
+    }
+}
+
 #[CoversClass(UserService::class)]
 class UserServiceTest extends TestCase
 {
@@ -24,7 +32,7 @@ class UserServiceTest extends TestCase
 
     public function testRegisterStoresAndReturnsUser()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $user = $svc->register('alice', 'password123');
         $this->assertArrayHasKey('id', $user);
         $this->assertSame('alice', $user['username']);
@@ -35,7 +43,7 @@ class UserServiceTest extends TestCase
 
     public function testRegisterThrowsOnDuplicateUsername()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $svc->register('bob', 'pw1234');
         $this->expectException(\RuntimeException::class);
         $svc->register('bob', 'pw2345');
@@ -43,42 +51,42 @@ class UserServiceTest extends TestCase
 
     public function testRegisterThrowsOnEmptyUsername()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->register('', 'pw1234');
     }
 
     public function testRegisterThrowsOnEmptyPassword()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->register('charlie', '');
     }
 
     public function testRegisterThrowsOnWhitespaceUsername()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->register('   ', 'pw1234');
     }
 
     public function testRegisterThrowsOnWhitespacePassword()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->register('dave', '       ');
     }
 
     public function testRegisterThrowsOnShortPassword()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->register('eve', '123');
     }
 
     public function testRegisterThrowsOnLongUsername()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $longUsername = str_repeat('a', 51);
         $this->expectException(\RuntimeException::class);
         $svc->register($longUsername, 'validPassword');
@@ -86,7 +94,7 @@ class UserServiceTest extends TestCase
 
     public function testRegisterThrowsOnLongPassword()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $longPassword = str_repeat('a', 129);
         $this->expectException(\RuntimeException::class);
         $svc->register('validUser', $longPassword);
@@ -94,21 +102,21 @@ class UserServiceTest extends TestCase
 
     public function testRegisterTrimsUsername()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $user = $svc->register('  gregor  ', 'pw1234');
         $this->assertSame('gregor', $user['username']);
     }
 
     public function testRegisterTrimsPassword()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $user = $svc->register('grace', '  pw1234  ');
         $this->assertTrue(password_verify('pw1234', $user['password']));
     }
 
     public function testRegisterIsCaseSensitive()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $svc->register('Heidi', 'pw1234');
         $user = $svc->register('heidi', 'pw2345');
         $this->assertSame('heidi', $user['username']);
@@ -116,42 +124,42 @@ class UserServiceTest extends TestCase
 
     public function testRegisterThrowsOnNonStringUsername()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\TypeError::class);
         $svc->register(null, 'pw1234');
     }
 
     public function testRegisterThrowsOnNonStringPassword()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\TypeError::class);
         $svc->register('ivan', null);
     }
 
     public function testRegisterThrowsOnInvalidUsernameCharacters()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->register('invalid*user', 'pw1234');
     }
 
     public function testRegisterThrowsOnInvalidPasswordCharacters()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->register('julia', "pw\n1234");
     }
 
     public function testRegisterThrowsOnShortUsername()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->register('ab', 'validPassword');
     }
 
     public function testLoginReturnsUserOnSuccess()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $svc->register('carol', 'pw1234');
         $user = $svc->login('carol', 'pw1234');
         $this->assertSame('carol', $user['username']);
@@ -159,7 +167,7 @@ class UserServiceTest extends TestCase
 
     public function testLoginThrowsOnWrongPassword()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $svc->register('dave', 'pw1234');
         $this->expectException(\RuntimeException::class);
         $svc->login('dave', 'wrongpw');
@@ -167,14 +175,14 @@ class UserServiceTest extends TestCase
 
     public function testLoginThrowsOnMissingUser()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
         $svc->login('eve', 'pw1234');
     }
 
     public function testFindUserReturnsUserOrNull()
     {
-        $svc = new UserService($this->tmpFile);
+        $svc = new TestableUserService($this->tmpFile);
         $svc->register('frank', 'pw1234');
         $user = $svc->findUser('frank');
         $this->assertNotNull($user);
