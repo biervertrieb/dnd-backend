@@ -7,7 +7,7 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\App;
 
-$userSvc = new UserService();
+$userSvc = UserService::getInstance();
 $app->group('/auth', function ($group) use ($userSvc) {
     // group routes if needed
 
