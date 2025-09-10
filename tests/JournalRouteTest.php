@@ -83,6 +83,7 @@ class JournalRouteTest extends TestCase
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/journal')
             ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($newEntry);
         $response = $this->app->handle($request);
 
@@ -109,6 +110,7 @@ class JournalRouteTest extends TestCase
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/journal')
             ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($invalidEntry);
         $response = $this->app->handle($request);
 
@@ -130,6 +132,7 @@ class JournalRouteTest extends TestCase
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/journal')
             ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($invalidEntry);
         $response = $this->app->handle($request);
 
@@ -151,6 +154,7 @@ class JournalRouteTest extends TestCase
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/journal')
             ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($invalidEntry);
         $response = $this->app->handle($request);
 
@@ -174,6 +178,7 @@ class JournalRouteTest extends TestCase
         $request = (new ServerRequestFactory())
             ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
             ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($updatedData);
         $response = $this->app->handle($request);
 
@@ -201,6 +206,7 @@ class JournalRouteTest extends TestCase
         $request = (new ServerRequestFactory())
             ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
             ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($invalidData);
         $response = $this->app->handle($request);
 
@@ -224,6 +230,7 @@ class JournalRouteTest extends TestCase
         $request = (new ServerRequestFactory())
             ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
             ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($invalidData);
         $response = $this->app->handle($request);
 
@@ -247,6 +254,7 @@ class JournalRouteTest extends TestCase
         $request = (new ServerRequestFactory())
             ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
             ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($invalidData);
         $response = $this->app->handle($request);
 
@@ -313,6 +321,7 @@ class JournalRouteTest extends TestCase
         ];
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/journal')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($newEntry);
         $response = $this->app->handle($request);
 
@@ -330,6 +339,7 @@ class JournalRouteTest extends TestCase
         ];
         $request = (new ServerRequestFactory())
             ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody($updatedData);
         $response = $this->app->handle($request);
 
