@@ -4,13 +4,7 @@ use App\Services\UserService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-class TestableUserService extends UserService
-{
-    public function __construct(string $filePath)
-    {
-        parent::__construct($filePath);
-    }
-}
+require_once 'HelperClasses.php';
 
 #[CoversClass(UserService::class)]
 class UserServiceTest extends TestCase

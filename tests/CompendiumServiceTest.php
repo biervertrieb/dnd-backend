@@ -5,13 +5,7 @@ use App\Util\Slug;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-class TestableCompendiumService extends CompendiumService
-{
-    public function __construct(string $filePath)
-    {
-        parent::__construct($filePath);
-    }
-}
+require_once 'HelperClasses.php';
 
 #[CoversClass(CompendiumService::class)]
 class CompendiumServiceTest extends TestCase
