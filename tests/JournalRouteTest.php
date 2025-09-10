@@ -279,4 +279,56 @@ class JournalRouteTest extends TestCase
         $this->assertEquals('error', $data['status']);
         $this->assertStringContainsString('Entry not found', $data['message']);
     }
+
+    public function testGetEntryUnauthorizedAccess()
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('GET', '/journal');
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    public function testAddEntryUnauthorizedAccess()
+    {
+        $newEntry = [
+            'title' => 'Session 3',
+            'body' => 'We met a dragon!',
+            'day' => 3
+        ];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/journal')
+            ->withParsedBody($newEntry);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    public function testUpdateEntryUnauthorizedAccess()
+    {
+        $entries = $this->service->getEntries();
+        $entryToUpdate = $entries[0];
+        $updatedData = [
+            'title' => 'Updated Session 2',
+            'body' => 'We found an even bigger treasure!',
+            'day' => 2
+        ];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/' . $entryToUpdate['id'])
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(401, $response->getStatusCode());
+    }
+
+    public function testDeleteEntryUnauthorizedAccess()
+    {
+        $entries = $this->service->getEntries();
+        $entryToDelete = $entries[0];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('DELETE', '/journal/' . $entryToDelete['id']);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(401, $response->getStatusCode());
+    }
 }
