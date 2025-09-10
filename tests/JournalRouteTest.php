@@ -264,4 +264,19 @@ class JournalRouteTest extends TestCase
         $this->assertCount(1, $remainingEntries);
         $this->assertNotEquals($entryToDelete['id'], $remainingEntries[0]['id']);
     }
+
+    public function testDeleteEntryRouteNonexistentEntry()
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('DELETE', '/journal/nonexistent-id')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+
+        $this->assertEquals(400, $response->getStatusCode());
+        $body = (string) $response->getBody();
+        $data = json_decode($body, true);
+        $this->assertIsArray($data);
+        $this->assertEquals('error', $data['status']);
+        $this->assertStringContainsString('Entry not found', $data['message']);
+    }
 }
