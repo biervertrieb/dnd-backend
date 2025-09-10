@@ -17,6 +17,10 @@ function registerJournalRoutes(App $app, JournalService $svc): void
 
         $group->post('', function (Request $request, Response $response) use ($svc) {
             $input = $request->getParsedBody();
+            if (!is_numeric($input['day']) || intval($input['day']) != $input['day']) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Day must be an integer']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
             try {
                 $entry = $svc->addEntry($input['title'] ?? null, $input['body'] ?? null, $input['day'] ?? null);
                 $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $entry]));
@@ -30,6 +34,10 @@ function registerJournalRoutes(App $app, JournalService $svc): void
         $group->put('/{id}', function (Request $request, Response $response, array $args) use ($svc) {
             $id = $args['id'];
             $input = $request->getParsedBody();
+            if (!is_numeric($input['day']) || intval($input['day']) != $input['day']) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Day must be an integer']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
             try {
                 $updated = $svc->updateEntry($id, $input['title'] ?? null, $input['body'] ?? null, $input['day'] ?? null);
                 $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
