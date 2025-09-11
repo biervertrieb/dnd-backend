@@ -549,6 +549,18 @@ class JournalRouteTest extends TestCase
         $this->assertEquals(401, $response->getStatusCode());
     }
 
+    public function testUpdateEntryNonexistentEntry(): void
+    {
+        $updatedData = ['title' => 'Valid', 'body' => 'Valid body', 'day' => 1];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', '/journal/nonexistent-id')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody($updatedData);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
     // --- Edge Cases ---
 
     public function testAddEntryEmptyBody(): void

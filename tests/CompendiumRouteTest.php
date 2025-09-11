@@ -753,6 +753,23 @@ class CompendiumRouteTest extends TestCase
         $this->assertEquals(400, $response->getStatusCode());
     }
 
+    public function testUpdateEntryDuplicateKeys(): void
+    {
+        $entry = $this->service->getBySlug('sword');
+        $id = $entry['id'];
+        $rawJson = '{"title": "Sword", "title": "Duplicate", "body": "Body", "tags": ["tag"]}';
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', "/compendium/{$id}")
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $stream = new \Slim\Psr7\Stream(fopen('php://temp', 'r+'));
+        $stream->write($rawJson);
+        $stream->rewind();
+        $request = $request->withBody($stream);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
     public function testUnsupportedHttpMethods(): void
     {
         // PATCH: Slim throws HttpMethodNotAllowedException
