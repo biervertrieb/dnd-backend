@@ -784,4 +784,108 @@ class JournalRouteTest extends TestCase
         $response = $this->app->handle($request);
         $this->assertEquals(401, $response->getStatusCode());
     }
+
+    public function testAddEntryNullValues(): void
+    {
+        $fields = [
+            ['title' => null, 'body' => 'Valid body', 'day' => 1],
+            ['title' => 'Valid', 'body' => null, 'day' => 1],
+            ['title' => 'Valid', 'body' => 'Valid body', 'day' => null],
+        ];
+        foreach ($fields as $newEntry) {
+            $request = (new ServerRequestFactory())
+                ->createServerRequest('POST', '/journal')
+                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+                ->withParsedBody($newEntry);
+            $response = $this->app->handle($request);
+            $this->assertEquals(400, $response->getStatusCode());
+            $data = json_decode((string) $response->getBody(), true);
+            $this->assertEquals('error', $data['status']);
+        }
+    }
+
+    public function testUpdateEntryNullValues(): void
+    {
+        $entry = $this->service->getEntries()[0];
+        $id = $entry['id'];
+        $fields = [
+            ['title' => null, 'body' => 'Valid body', 'day' => 1],
+            ['title' => 'Valid', 'body' => null, 'day' => 1],
+            ['title' => 'Valid', 'body' => 'Valid body', 'day' => null],
+        ];
+        foreach ($fields as $updatedData) {
+            $request = (new ServerRequestFactory())
+                ->createServerRequest('PUT', "/journal/{$id}")
+                ->withHeader('Content-Type', 'application/json')
+                ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+                ->withParsedBody($updatedData);
+            $response = $this->app->handle($request);
+            $this->assertEquals(400, $response->getStatusCode());
+            $data = json_decode((string) $response->getBody(), true);
+            $this->assertEquals('error', $data['status']);
+        }
+    }
+
+    public function testDeleteEntryWrongContentType(): void
+    {
+        $entry = $this->service->getEntries()[0];
+        $id = $entry['id'];
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('DELETE', "/journal/{$id}")
+            ->withHeader('Content-Type', 'text/plain')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());  // DELETE should succeed regardless of content type
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals('ok', $data['status']);
+    }
+
+    public function testUpdateEntryDuplicateKeys(): void
+    {
+        $entry = $this->service->getEntries()[0];
+        $id = $entry['id'];
+        $rawJson = '{"title": "Session", "title": "Duplicate", "body": "Body", "day": 1}';
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', "/journal/{$id}")
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken);
+        $stream = new \Slim\Psr7\Stream(fopen('php://temp', 'r+'));
+        $stream->write($rawJson);
+        $stream->rewind();
+        $request = $request->withBody($stream);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testUpdateEntryBodyNotObject(): void
+    {
+        $entry = $this->service->getEntries()[0];
+        $id = $entry['id'];
+        // Array
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', "/journal/{$id}")
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody(['not', 'an', 'object']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+
+        // String and Number: Slim throws InvalidArgumentException
+        $this->expectException(\InvalidArgumentException::class);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', "/journal/{$id}")
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody('justastring');
+        $this->app->handle($request);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PUT', "/journal/{$id}")
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Authorization', 'Bearer ' . $this->testtoken)
+            ->withParsedBody(123);
+        $this->app->handle($request);
+    }
 }
