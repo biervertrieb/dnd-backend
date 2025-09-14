@@ -46,12 +46,15 @@ function registerAuthRoutes(App $app, UserService $userSvc, SessionService $sess
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Content-Type must be application/json']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
+            $input = $request->getParsedBody();
             $bodySize = strlen($request->getBody()->__toString());
+            if (is_array($input)) {
+                $bodySize = strlen(json_encode($input));
+            }
             if ($bodySize > 1024 * 1024) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Payload too large']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
-            $input = $request->getParsedBody();
             if (!is_array($input)) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing or invalid fields']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
@@ -99,12 +102,15 @@ function registerAuthRoutes(App $app, UserService $userSvc, SessionService $sess
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Content-Type must be application/json']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
+            $input = $request->getParsedBody();
             $bodySize = strlen($request->getBody()->__toString());
+            if (is_array($input)) {
+                $bodySize = strlen(json_encode($input));
+            }
             if ($bodySize > 1024 * 1024) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Payload too large']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
             }
-            $input = $request->getParsedBody();
             if (!is_array($input)) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing or invalid fields']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);

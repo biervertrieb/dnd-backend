@@ -17,6 +17,14 @@ function registerJournalRoutes(App $app, JournalService $svc): void
 
         $group->post('', function (Request $request, Response $response) use ($svc) {
             $input = $request->getParsedBody();
+            $bodySize = strlen($request->getBody()->__toString());
+            if (is_array($input)) {
+                $bodySize = strlen(json_encode($input));
+            }
+            if ($bodySize > 1024 * 1024) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Payload too large']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
             if (!is_array($input)) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing or invalid fields']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
@@ -51,6 +59,14 @@ function registerJournalRoutes(App $app, JournalService $svc): void
         $group->put('/{id}', function (Request $request, Response $response, array $args) use ($svc) {
             $id = $args['id'];
             $input = $request->getParsedBody();
+            $bodySize = strlen($request->getBody()->__toString());
+            if (is_array($input)) {
+                $bodySize = strlen(json_encode($input));
+            }
+            if ($bodySize > 1024 * 1024) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Payload too large']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            }
             if (!is_array($input)) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Missing or invalid fields']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);

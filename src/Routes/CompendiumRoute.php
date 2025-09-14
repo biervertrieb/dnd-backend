@@ -36,6 +36,9 @@ function registerCompendiumRoutes(App $app, CompendiumService $comp_svc): void
         $group->post('', function (Request $request, Response $response) use ($comp_svc) {
             $input = $request->getParsedBody();
             $bodySize = strlen($request->getBody()->__toString());
+            if (is_array($input)) {
+                $bodySize = strlen(json_encode($input));
+            }
             if ($bodySize > 1024 * 1024) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Payload too large']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
@@ -101,6 +104,9 @@ function registerCompendiumRoutes(App $app, CompendiumService $comp_svc): void
             $id = $args['id'];
             $input = $request->getParsedBody();
             $bodySize = strlen($request->getBody()->__toString());
+            if (is_array($input)) {
+                $bodySize = strlen(json_encode($input));
+            }
             if ($bodySize > 1024 * 1024) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Payload too large']));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);

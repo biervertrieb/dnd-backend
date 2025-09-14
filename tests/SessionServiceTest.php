@@ -2,6 +2,7 @@
 
 use App\Services\SessionService;
 use App\Util\JWT;
+use Dotenv\Dotenv;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -11,6 +12,19 @@ require_once __DIR__ . '/HelperClasses.php';
 class SessionServiceTest extends TestCase
 {
     private string $tmpFile;
+
+    public static function setUpBeforeClass(): void
+    {
+        $envPath = __DIR__ . '/../.env';
+        if (!file_exists($envPath)) {
+            throw new \RuntimeException(".env file not found at $envPath");
+        }
+        $dotenv = Dotenv::createImmutable(__DIR__ . '/../');
+        $dotenv->load();
+        if (empty($_ENV['JWT_SECRET'] ?? null)) {
+            throw new \RuntimeException('JWT_SECRET not set in .env file');
+        }
+    }
 
     protected function setUp(): void
     {
