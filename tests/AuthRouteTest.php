@@ -64,7 +64,8 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
-            ->withParsedBody(['username' => 'newuser', 'password' => 'password123']);
+            ->withParsedBody(['username' => 'newuser', 'password' => 'password123'])
+            ->withHeader('Content-Type', 'application/json');
 
         $response = $this->app->handle($request);
         $this->assertEquals(200, $response->getStatusCode());
@@ -81,6 +82,7 @@ class AuthRouteTest extends TestCase
 
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'existinguser', 'password' => 'newpassword']);
 
         $response = $this->app->handle($request);
@@ -95,6 +97,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => '', 'password' => 'password123']);
 
         $response = $this->app->handle($request);
@@ -109,6 +112,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'newuser', 'password' => '']);
 
         $response = $this->app->handle($request);
@@ -123,6 +127,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => '   ', 'password' => 'password123']);
 
         $response = $this->app->handle($request);
@@ -137,6 +142,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'newuser', 'password' => '   ']);
 
         $response = $this->app->handle($request);
@@ -151,6 +157,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'ab', 'password' => 'password123']);
 
         $response = $this->app->handle($request);
@@ -166,6 +173,7 @@ class AuthRouteTest extends TestCase
         $longUsername = str_repeat('a', 51);
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => $longUsername, 'password' => 'password123']);
 
         $response = $this->app->handle($request);
@@ -180,6 +188,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'newuser', 'password' => '123']);
 
         $response = $this->app->handle($request);
@@ -195,6 +204,7 @@ class AuthRouteTest extends TestCase
         $longPassword = str_repeat('a', 129);
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'newuser', 'password' => $longPassword]);
 
         $response = $this->app->handle($request);
@@ -209,6 +219,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'invalid user!', 'password' => 'password123']);
 
         $response = $this->app->handle($request);
@@ -223,6 +234,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'newuser', 'password' => "pass\nword"]);
 
         $response = $this->app->handle($request);
@@ -237,6 +249,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['password' => 'password123']);
 
         $response = $this->app->handle($request);
@@ -251,6 +264,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'newuser']);
 
         $response = $this->app->handle($request);
@@ -265,6 +279,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => ['not', 'a', 'string', 123], 'password' => 'password123']);
 
         $response = $this->app->handle($request);
@@ -279,6 +294,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'newuser', 'password' => [123456]]);
 
         $response = $this->app->handle($request);
@@ -293,6 +309,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => '  trimmeduser  ', 'password' => '  password123  ']);
 
         $response = $this->app->handle($request);
@@ -309,6 +326,7 @@ class AuthRouteTest extends TestCase
         $this->userService->register('loginuser', 'password123');
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'loginuser', 'password' => 'password123']);
         $response = $this->app->handle($request);
         $this->assertEquals(200, $response->getStatusCode());
@@ -343,6 +361,7 @@ class AuthRouteTest extends TestCase
         $this->userService->register('loginuser2', 'password123');
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'loginuser2', 'password' => 'wrongpassword']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -356,6 +375,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'nonexistent', 'password' => 'password123']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -369,6 +389,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => '', 'password' => 'password123']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -382,6 +403,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'loginuser', 'password' => '']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -395,6 +417,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['password' => 'password123']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -408,6 +431,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'loginuser']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -421,6 +445,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => [12345], 'password' => 'password123']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -434,6 +459,7 @@ class AuthRouteTest extends TestCase
     {
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'loginuser', 'password' => [233456]]);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -448,6 +474,7 @@ class AuthRouteTest extends TestCase
         $this->userService->register('trimmedlogin', 'password123');
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => '  trimmedlogin  ', 'password' => '  password123  ']);
         $response = $this->app->handle($request);
         $this->assertEquals(200, $response->getStatusCode());
@@ -465,6 +492,7 @@ class AuthRouteTest extends TestCase
         $this->userService->register('CaseSensitive', 'password123');
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'casesensitive', 'password' => 'password123']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -481,6 +509,7 @@ class AuthRouteTest extends TestCase
         // First login
         $request1 = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'multisession', 'password' => 'password123']);
         $response1 = $this->app->handle($request1);
         $this->assertEquals(200, $response1->getStatusCode());
@@ -496,6 +525,7 @@ class AuthRouteTest extends TestCase
         // Second login
         $request2 = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'multisession', 'password' => 'password123']);
         $response2 = $this->app->handle($request2);
         $this->assertEquals(200, $response2->getStatusCode());
@@ -521,6 +551,7 @@ class AuthRouteTest extends TestCase
         $this->userService->register('casepassword', 'Password123');
         $request = (new ServerRequestFactory())
             ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
             ->withParsedBody(['username' => 'casepassword', 'password' => 'password123']);
         $response = $this->app->handle($request);
         $this->assertEquals(400, $response->getStatusCode());
@@ -770,5 +801,221 @@ class AuthRouteTest extends TestCase
         // Check that the session is removed
         $sessions = $this->sessionService->getSessions();
         $this->assertCount(0, $sessions, 'Session should be removed after logout');
+    }
+
+    // --- Missing Cases for Consistency ---
+
+    public function testRegisterEndpointMalformedJson(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json');
+        $body = '{"username": "user", "password": "missing end quote}';
+        $request = $request->withBody((new \Slim\Psr7\Stream(fopen('php://temp', 'r+'))));
+        $request->getBody()->write($body);
+        $request->getBody()->rewind();
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testRegisterEndpointWrongContentType(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'text/plain')
+            ->withParsedBody(['username' => 'user', 'password' => 'password123']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testRegisterEndpointExtraFields(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody(['username' => 'user', 'password' => 'password123', 'extra' => 'field']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('user', $data);
+    }
+
+    public function testRegisterEndpointDuplicateKeys(): void
+    {
+        $rawJson = '{"username": "user", "username": "duplicate", "password": "password123"}';
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json');
+        $stream = new \Slim\Psr7\Stream(fopen('php://temp', 'r+'));
+        $stream->write($rawJson);
+        $stream->rewind();
+        $request = $request->withBody($stream);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testRegisterEndpointBoundaryValues(): void
+    {
+        $username = str_repeat('U', 50);
+        $password = str_repeat('P', 128);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody(['username' => $username, 'password' => $password]);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals($username, $data['user']['username']);
+    }
+
+    public function testRegisterEndpointUnicodeCharacters(): void
+    {
+        $username = 'Tést🚀';
+        $password = 'Pässwörd💡';
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody(['username' => $username, 'password' => $password]);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testRegisterEndpointPayloadTooLarge(): void
+    {
+        $largepayload = str_repeat('U', 2000000);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/register')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody(['username' => 'large', 'password' => 'payload incoming', 'payload' => $largepayload]);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testLoginEndpointMalformedJson(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json');
+        $body = '{"username": "user", "password": "missing end brace"';
+        $request = $request->withBody((new \Slim\Psr7\Stream(fopen('php://temp', 'r+'))));
+        $request->getBody()->write($body);
+        $request->getBody()->rewind();
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testLoginEndpointWrongContentType(): void
+    {
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'text/plain')
+            ->withParsedBody(['username' => 'user', 'password' => 'password123']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testLoginEndpointExtraFields(): void
+    {
+        $this->userService->register('user', 'password123');
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody(['username' => 'user', 'password' => 'password123', 'extra' => 'field']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('accessToken', $data);
+    }
+
+    public function testLoginEndpointDuplicateKeys(): void
+    {
+        $rawJson = '{"username": "user", "username": "duplicate", "password": "password123"}';
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json');
+        $stream = new \Slim\Psr7\Stream(fopen('php://temp', 'r+'));
+        $stream->write($rawJson);
+        $stream->rewind();
+        $request = $request->withBody($stream);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testLoginEndpointBoundaryValues(): void
+    {
+        $username = str_repeat('U', 50);
+        $password = str_repeat('P', 128);
+        $this->userService->register($username, $password);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody(['username' => $username, 'password' => $password]);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertEquals($username, $data['user']['username']);
+    }
+
+    public function testLoginEndpointPayloadTooLarge(): void
+    {
+        $largepayload = str_repeat('U', 1024 * 1024);
+        $this->userService->register('largeuser', 'payloadincoming');
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/login')
+            ->withHeader('Content-Type', 'application/json')
+            ->withParsedBody(['username' => 'largeuser', 'password' => 'payloadincoming', 'payload' => $largepayload]);
+        $response = $this->app->handle($request);
+        $this->assertEquals(400, $response->getStatusCode());
+    }
+
+    public function testRefreshEndpointExtraFields(): void
+    {
+        $session = $this->sessionService->createSession(1, 'user');
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/refresh')
+            ->withCookieParams(['refreshToken' => $session['refreshToken'], 'extra' => 'field']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('accessToken', $data);
+    }
+
+    public function testLogoutEndpointExtraFields(): void
+    {
+        $session = $this->sessionService->createSession(1, 'user');
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('POST', '/auth/refresh/logout')
+            ->withCookieParams(['refreshToken' => $session['refreshToken'], 'extra' => 'field']);
+        $response = $this->app->handle($request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode((string) $response->getBody(), true);
+        $this->assertArrayHasKey('message', $data);
+    }
+
+    public function testUnsupportedHttpMethods(): void
+    {
+        // PATCH: Slim throws HttpMethodNotAllowedException
+        $this->expectException(\Slim\Exception\HttpMethodNotAllowedException::class);
+        $request = (new ServerRequestFactory())
+            ->createServerRequest('PATCH', '/auth/register');
+        $this->app->handle($request);
+
+        try {
+            $request = (new ServerRequestFactory())
+                ->createServerRequest('OPTIONS', '/auth/register');
+            $response = $this->app->handle($request);
+            $this->assertTrue(in_array($response->getStatusCode(), [200, 404, 405]));
+        } catch (\Slim\Exception\HttpMethodNotAllowedException $e) {
+            $this->assertTrue(true);
+        }
+
+        try {
+            $request = (new ServerRequestFactory())
+                ->createServerRequest('HEAD', '/auth/register');
+            $response = $this->app->handle($request);
+            $this->assertTrue(in_array($response->getStatusCode(), [200, 404, 405]));
+        } catch (\Slim\Exception\HttpMethodNotAllowedException $e) {
+            $this->assertTrue(true);
+        }
     }
 }
