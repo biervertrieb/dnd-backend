@@ -155,7 +155,7 @@ class UserServiceTest extends TestCase
     {
         $svc = new TestableUserService($this->tmpFile);
         $svc->register('carol', 'pw1234');
-        $user = $svc->login('carol', 'pw1234');
+        $user = $svc->verifyLogin('carol', 'pw1234');
         $this->assertSame('carol', $user['username']);
     }
 
@@ -164,14 +164,14 @@ class UserServiceTest extends TestCase
         $svc = new TestableUserService($this->tmpFile);
         $svc->register('dave', 'pw1234');
         $this->expectException(\RuntimeException::class);
-        $svc->login('dave', 'wrongpw');
+        $svc->verifyLogin('dave', 'wrongpw');
     }
 
     public function testLoginThrowsOnMissingUser()
     {
         $svc = new TestableUserService($this->tmpFile);
         $this->expectException(\RuntimeException::class);
-        $svc->login('eve', 'pw1234');
+        $svc->verifyLogin('eve', 'pw1234');
     }
 
     public function testFindUserReturnsUserOrNull()
