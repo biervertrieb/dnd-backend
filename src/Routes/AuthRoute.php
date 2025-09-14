@@ -39,7 +39,7 @@ function registerAuthRoutes(App $app, UserService $userSvc): void
         $group->post('/login', function (Request $request, Response $response) use ($userSvc) {
             $input = $request->getParsedBody();
             try {
-                $user = $userSvc->login($input['username'] ?? '', $input['password'] ?? '');
+                $user = $userSvc->verifyLogin($input['username'] ?? '', $input['password'] ?? '');
                 $accessToken = JWT::encode(['id' => $user['id'], 'username' => $user['username']]);
                 $refreshToken = JWT::encode(['id' => $user['id'], 'username' => $user['username'], 'exp' => time() + 604800]);  // 1 week
                 $response->getBody()->write(json_encode(

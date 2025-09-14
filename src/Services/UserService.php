@@ -76,7 +76,7 @@ class UserService extends \App\Util\Singleton
         return $user;
     }
 
-    public function login(string $username, string $password): array
+    public function verifyLogin(string $username, string $password): array
     {
         foreach ($this->users as $user) {
             if ($user['username'] === $username) {
