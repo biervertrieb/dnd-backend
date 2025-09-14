@@ -4,7 +4,7 @@ use App\Services\UserService;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-require_once 'HelperClasses.php';
+require_once __DIR__ . '/HelperClasses.php';
 
 #[CoversClass(UserService::class)]
 class UserServiceTest extends TestCase
