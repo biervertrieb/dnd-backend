@@ -100,7 +100,6 @@ function registerJournalRoutes(App $app, JournalService $svc): void
 
         $group->delete('/{id}', function (Request $request, Response $response, array $args) use ($svc) {
             $id = $args['id'];
-            $input = $request->getParsedBody();
             try {
                 $updated = $svc->deleteEntry($id);
                 $response->getBody()->write(json_encode(['status' => 'ok', 'entry' => $updated]));
