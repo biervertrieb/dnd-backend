@@ -26,6 +26,9 @@ function registerAuthRoutes(App $app, UserService $userSvc): void
             } catch (\RuntimeException $e) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(400);
+            } catch (\Exception $e) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Internal server error']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
         });
 
@@ -54,6 +57,9 @@ function registerAuthRoutes(App $app, UserService $userSvc): void
             } catch (\RuntimeException $e) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+            } catch (\Exception $e) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Internal server error']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
         });
 
@@ -94,6 +100,9 @@ function registerAuthRoutes(App $app, UserService $userSvc): void
             } catch (\RuntimeException $e) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+            } catch (\Exception $e) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Internal server error']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
         });
 
@@ -168,6 +177,9 @@ function registerAuthRoutes(App $app, UserService $userSvc): void
             } catch (\RuntimeException $e) {
                 $response->getBody()->write(json_encode(['status' => 'error', 'message' => $e->getMessage()]));
                 return $response->withHeader('Content-Type', 'application/json')->withStatus(401);
+            } catch (\Exception $e) {
+                $response->getBody()->write(json_encode(['status' => 'error', 'message' => 'Internal server error']));
+                return $response->withHeader('Content-Type', 'application/json')->withStatus(500);
             }
         })->add(new JWTAuthMiddleware());
     });
