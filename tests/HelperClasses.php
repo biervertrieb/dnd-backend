@@ -54,4 +54,9 @@ class TestableSessionService extends SessionService
             }
         }
     }
+
+    public function getSessions(): array
+    {
+        return $this->sessions;
+    }
 }

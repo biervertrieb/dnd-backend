@@ -78,6 +78,8 @@ class UserService extends \App\Util\Singleton
 
     public function verifyLogin(string $username, string $password): array
     {
+        $username = trim($username);
+        $password = trim($password);
         foreach ($this->users as $user) {
             if ($user['username'] === $username) {
                 if (password_verify($password, $user['password'])) {
