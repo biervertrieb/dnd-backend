@@ -133,7 +133,6 @@ function registerAuthRoutes(App $app, UserService $userSvc, SessionService $sess
          * request: POST /refresh
          * must provide refresh token as cookie
          * response: {status: 'ok', accessToken: string, user: {id: int, username: string}} or {status: 'error', message: string}
-         * does not set a cookie (yet)
          */
         $group->post('/refresh', function (Request $request, Response $response) use ($sessSvc) {
             $cookies = $request->getCookieParams();
