@@ -60,9 +60,11 @@ class SessionService extends \App\Util\Singleton
         // Create session ID
         $sessID = uniqid('sess_', true);
         $refreshToken = SessionService::generateToken();
+        $at_exp = time() + 5 * 60;  // 5 minutes
         $accessToken = JWT::encode([
             'id' => $userId,
-            'username' => $username
+            'username' => $username,
+            'exp' => $at_exp
         ]);
 
         // Store session
@@ -77,7 +79,7 @@ class SessionService extends \App\Util\Singleton
             'previousTokens' => [],
         ];
         $this->save();
-        return ['refreshToken' => $refreshToken, 'accessToken' => $accessToken];
+        return ['refreshToken' => $refreshToken, 'accessToken' => $accessToken, 'exp' => $at_exp];
     }
 
     /**
@@ -113,15 +115,18 @@ class SessionService extends \App\Util\Singleton
                 $session['rt_hash'] = hash('sha256', $newRefreshToken);
                 $session['rt_expires_at'] = time() + 60 * 60 * 24 * 7;  // 7 days
                 $this->save();
+                $at_exp = time() + 5 * 60;  // 5 minutes
                 $accessToken = JWT::encode([
                     'id' => $session['user_id'],
-                    'username' => $session['username']
+                    'username' => $session['username'],
+                    'exp' => $at_exp
                 ]);
                 return [
                     'user_id' => intval($session['user_id']),
                     'username' => $session['username'],
                     'refreshToken' => $newRefreshToken,
-                    'accessToken' => $accessToken
+                    'accessToken' => $accessToken,
+                    'exp' => $at_exp
                 ];
                 break;
             }
