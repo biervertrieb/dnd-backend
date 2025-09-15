@@ -138,6 +138,7 @@ function registerAuthRoutes(App $app, UserService $userSvc, SessionService $sess
                     [
                         'status' => 'ok',
                         'accessToken' => $session['accessToken'],
+                        'expiresAt' => $session['exp'],
                         'user' => ['id' => $user['id'], 'username' => $user['username']]
                     ]
                 ));
@@ -173,6 +174,7 @@ function registerAuthRoutes(App $app, UserService $userSvc, SessionService $sess
                     [
                         'status' => 'ok',
                         'accessToken' => $session['accessToken'],
+                        'expiresAt' => $session['exp'],
                         'user' => ['id' => $session['user_id'], 'username' => $session['username']]
                     ]
                 ));
