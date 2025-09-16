@@ -4,6 +4,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use App\Services\CompendiumService;
 use App\Services\JournalService;
+use App\Services\SessionService;
 use App\Services\UserService;
 use Dotenv\Dotenv;
 
@@ -25,6 +26,6 @@ foreach ($routeFiles as $file) {
 
 registerJournalRoutes($app, JournalService::getInstance());
 registerCompendiumRoutes($app, CompendiumService::getInstance());
-registerAuthRoutes($app, UserService::getInstance());
+registerAuthRoutes($app, UserService::getInstance(), SessionService::getInstance());
 
 $app->run();
